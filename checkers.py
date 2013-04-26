@@ -34,6 +34,15 @@ class Checkers(object):
 					 ['#','b','#','b','#','b','#','b'],
 					 ['b','#','b','#','b','#','b','#']]
 		
+		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
+					 #['.','#','.','#','.','#','.','#'],	# (b) - black piece
+					 #['#','.','#','R','#','.','#','.'],	# (#) - unplayable slot
+					 #['.','#','.','#','.','#','.','#'],	# (.) - free slot
+					 #['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
+					 #['.','#','.','#','B','#','.','#'],	# (B) - black checker piece
+					 #['#','.','#','.','#','.','#','.'],
+					 #['.','#','.','#','.','#','.','#']]
+		
 		self.selected_piece = None	# Set the selected piece
 		self.board_image = pygame.image.load(file_name).convert()
 		self.red_pieces = []
@@ -54,6 +63,15 @@ class Checkers(object):
 					p = Piece(self.BLACK_DEFAULT,(row,col),'b')
 					p.set_images(self.BLACK_DEFAULT, self.BLACK_DEFAULT_SELECTED)
 					self.black_pieces.append(p)
+				
+				if BOARD_MAP[row][col] == 'R':										# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+					p = Piece(self.RED_CHECKER,(row,col),'R')
+					p.set_images(self.RED_CHECKER, self.RED_CHECKER_SELECTED)
+					self.red_pieces.append(p)
+				if BOARD_MAP[row][col] == 'B':
+					p = Piece(self.BLACK_CHECKER,(row,col),'B')
+					p.set_images(self.BLACK_CHECKER, self.BLACK_CHECKER_SELECTED)
+					self.black_pieces.append(p)										# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	
 	
 	def events(self):
@@ -113,23 +131,47 @@ class Checkers(object):
 		col = x_m/self.TILE_X
 		row = y_m/self.TILE_Y
 		
-		if self.selected_piece.rect.collidepoint(pygame.mouse.get_pos()):
+		if  self.selected_piece.rect.collidepoint(pygame.mouse.get_pos()):
 			self.selected_piece.set_image_default()
 			self.selected_piece = None
-		elif self.selected_piece.is_next_move(row,col):
-			x_p, y_p = self.selected_piece.position
-			
-			BOARD_MAP[row][col] = self.selected_piece.group
-			BOARD_MAP[x_p][y_p] = '.'
-			self.selected_piece.position = (row,col)
-			self.selected_piece.set_image_default()
-			self.selected_piece = None
-			self.RED_TURN = not self.RED_TURN
 		else:
-			print "Jogada Invalida"
-			return
+			i = self.selected_piece.is_next_move(row,col)
+			if i >= 0:
+				x_p, y_p = self.selected_piece.position
+				
+				m,c = self.selected_piece.generate_moves()
+				if len(c):
+					self.remove_piece(c[i])
+				
+				self.selected_piece.position = (row,col)
+				
+				if self.selected_piece.group == 'r':
+					if self.selected_piece.position[0] == 7:
+						self.selected_piece.promote(self.RED_CHECKER, self.RED_CHECKER_SELECTED)
+				elif self.selected_piece.group == 'b':
+					if self.selected_piece.position[0] == 0:
+						self.selected_piece.promote(self.BLACK_CHECKER, self.BLACK_CHECKER_SELECTED)
+				
+				BOARD_MAP[row][col] = self.selected_piece.group
+				BOARD_MAP[x_p][y_p] = '.'
+				self.selected_piece.set_image_default()
+				self.selected_piece = None
+				self.RED_TURN = not self.RED_TURN
+			else:
+				print "Jogada Invalida"
+				return
 		#printBoardMap()
-			
+	
+	
+	def remove_piece(self, pos):
+		if self.RED_TURN:
+			pieces = self.black_pieces
+		else: pieces = self.red_pieces
+		for p in pieces:
+			if p.position == pos:
+				pieces.remove(p)
+				BOARD_MAP[pos[0]][pos[1]] = '.'
+				break
 	
 	def update(self,screen):
 		for piece in self.red_pieces:
@@ -164,10 +206,17 @@ class Piece(object):
 	
 	def is_next_move(self,row,col):
 		moves,captures = self.generate_moves()
-		if (row,col) in moves:
-			return True
-		else: return False
+		for i in range(len(moves)):
+			if (row,col) == moves[i]:
+				return i
+		return -1
 	
+	def promote(self, default, selected):
+		self.set_images(default, selected)
+		if self.group == 'r':
+			self.group = 'R'
+		elif self.group == 'b':
+			self.group = 'B'
 	
 	def generate_moves(self):
 		moves = []
@@ -216,10 +265,10 @@ class Piece(object):
 				new_position = BOARD_MAP[new_row][new_col]
 				if new_position == '.' and len(captures) == 0:
 					moves.append((new_row,new_col))
-				elif new_position != 'b' and new_position != 'B':
+				elif new_position == 'r' or new_position == 'R':
 					new_row -= 1
 					new_col += 1
-					if new_row < 8 and new_col < 8:
+					if new_row >= 0 and new_col < 8:
 						new_position = BOARD_MAP[new_row][new_col]
 						if new_position == '.':
 							if len(captures) == 0:
@@ -233,59 +282,49 @@ class Piece(object):
 				new_position = BOARD_MAP[new_row][new_col]
 				if new_position == '.' and len(captures) == 0:
 					moves.append((new_row,new_col))
-				elif new_position != 'b' and new_position != 'B':
+				elif new_position == 'r' or new_position == 'R':
 					new_row -= 1
 					new_col -= 1
-					if new_row < 8 and new_col >= 0:
+					if new_row >= 0 and new_col >= 0:
 						new_position = BOARD_MAP[new_row][new_col]
 						if new_position == '.':
 							if len(captures) == 0:
 								moves = []
 							captures.append((new_row+1,new_col+1))
 							moves.append((new_row,new_col))
-
 		
+		elif BOARD_MAP[row][col] == 'R' or BOARD_MAP[row][col] == 'B':
+			new_row = row + 1
+			new_col = col + 1
+			while( new_row < 8 and new_col < 8):
+				moves.append((new_row,new_col))
+				new_row += 1
+				new_col += 1
+			
+			new_row = row + 1
+			new_col = col - 1
+			while( new_row < 8 and new_col >= 0):
+				moves.append((new_row,new_col))
+				new_row += 1
+				new_col -= 1
+			
+			new_row = row - 1
+			new_col = col - 1
+			while( new_row >= 0 and new_col >= 0):
+				moves.append((new_row,new_col))
+				new_row -= 1
+				new_col -= 1
+			
+			new_row = row - 1
+			new_col = col + 1
+			while( new_row >= 0 and new_col < 8):
+				moves.append((new_row,new_col))
+				new_row -= 1
+				new_col += 1
 		
 		return moves,captures
+	#-- generate_moves() ---------------------------------
 
-
-#class RedPiece(Piece):
-	#def __init__(self,surface,pos):
-		#Piece.__init__(self,surface,pos,'r')
-	
-	#def is_next_move(self,row,col):
-		#""" Verifi if the 'move' is valid as next """
-		#global BOARD_MAP
-		#row = row - self.position[0]
-		#col = col - self.position[1]
-		
-		#print self.position,row,col
-		#if(row == 1 and fabs(col) == 1):
-			#next_position = BOARD_MAP[self.position[0]+row][self.position[1]+col]
-			
-			#if(next_position == "."):
-				#return True
-		#return False
-
-
-
-
-#class BlackPiece(Piece):
-	#global BOARD_MAP
-	#def __init__(self,surface,pos):
-		#Piece.__init__(self,surface,pos,'b')
-	
-	#def is_next_move(self,row,col):
-		#""" Verifi if the 'move' is valid as next """
-		#global BOARD_MAP
-		#row = row - self.position[0]
-		#col = col - self.position[1]
-		
-		#print self.position,row,col
-		#if(row == -1 and fabs(col) == 1):
-			#if(BOARD_MAP[self.position[0]+row][self.position[1]+col] == "."):
-				#return True
-		#return False
 
 if __name__ == "__main__":
 	pygame.init()
