@@ -1,52 +1,87 @@
-import sys, pygame
+#-*- coding: utf-8 -*-
+
+"""
+	ONDE PAREI:
+		REIMPLEMENTAR O MÉTODO DE MOVIMENTAÇÃO DAS PEÇAS
+"""
+
+
+
+
+import sys, pygame, copy
+import os
+from abc import *
 from math import *
 from pygame.locals import *
 
 global BOARD_MAP
+global RED_DEFAULT,     RED_DEFAULT_SELECTED
+global RED_CHECKER,     RED_CHECKER_SELECTED
+global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
+global BLACK_CHECKER, BLACK_CHECKER_SELECTED
+global CAPTURE_MODE
+
 
 def printBoardMap():
 		for i in BOARD_MAP:
 			print i
-		print "\n"
 
 
 class Checkers(object):
-	def __init__(self,file_name = "images/board1.png",red_first = True):
+	def __init__(self,file_name = "images/board1.png"):
 		global BOARD_MAP
-		self.RED_DEFAULT			= pygame.image.load("images/red_default.png"         ).convert_alpha()
-		self.RED_DEFAULT_SELECTED	= pygame.image.load("images/red_default_selected.png").convert_alpha()
-		self.RED_CHECKER			= pygame.image.load("images/red_checker.png"         ).convert_alpha()
-		self.RED_CHECKER_SELECTED	= pygame.image.load("images/red_checker_selected.png").convert_alpha()
+		global RED_DEFAULT,     RED_DEFAULT_SELECTED
+		global RED_CHECKER,     RED_CHECKER_SELECTED
+		global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
+		global BLACK_CHECKER, BLACK_CHECKER_SELECTED
+		global CAPTURE_MODE
 		
-		self.BLACK_DEFAULT 			= pygame.image.load("images/black_default.png"         ).convert_alpha()
-		self.BLACK_DEFAULT_SELECTED	= pygame.image.load("images/black_default_selected.png").convert_alpha()
-		self.BLACK_CHECKER			= pygame.image.load("images/black_checker.png"         ).convert_alpha()
-		self.BLACK_CHECKER_SELECTED	= pygame.image.load("images/black_checker_selected.png").convert_alpha()
+		RED_DEFAULT				= pygame.image.load("images/red_default.png"           ).convert_alpha()
+		RED_DEFAULT_SELECTED	= pygame.image.load("images/red_default_selected.png"  ).convert_alpha()
+		RED_CHECKER				= pygame.image.load("images/red_checker.png"           ).convert_alpha()
+		RED_CHECKER_SELECTED	= pygame.image.load("images/red_checker_selected.png"  ).convert_alpha()
 		
-		self.RED_TURN = red_first
+		BLACK_DEFAULT 			= pygame.image.load("images/black_default.png"         ).convert_alpha()
+		BLACK_DEFAULT_SELECTED	= pygame.image.load("images/black_default_selected.png").convert_alpha()
+		BLACK_CHECKER			= pygame.image.load("images/black_checker.png"         ).convert_alpha()
+		BLACK_CHECKER_SELECTED	= pygame.image.load("images/black_checker_selected.png").convert_alpha()
 		
-		BOARD_MAP = [['#','r','#','r','#','r','#','r'],	# (r) - red piece
-					 ['r','#','r','#','r','#','r','#'],	# (b) - black piece
-					 ['#','r','#','r','#','r','#','r'],	# (#) - unplayable slot
-					 ['.','#','.','#','.','#','.','#'],	# (.) - free slot
-					 ['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
-					 ['b','#','b','#','b','#','b','#'],	# (B) - black checker piece
-					 ['#','b','#','b','#','b','#','b'],
-					 ['b','#','b','#','b','#','b','#']]
+		CAPTURE_MODE = False
+		
+		
+		#BOARD_MAP = [['#','b','#','b','#','b','#','b'],		# (r) - red piece
+					 #['b','#','b','#','b','#','b','#'],		# (b) - black piece
+					 #['#','b','#','b','#','b','#','b'],		# (#) - unplayable slot
+					 #['.','#','.','#','.','#','.','#'],		# (.) - free slot
+					 #['#','.','#','.','#','.','#','.'],		# (R) - red checker piece
+					 #['r','#','r','#','r','#','r','#'],		# (B) - black checker piece
+					 #['#','r','#','r','#','r','#','r'],
+					 #['r','#','r','#','r','#','r','#']]
 		
 		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 #['.','#','.','#','.','#','.','#'],	# (b) - black piece
-					 #['#','.','#','R','#','.','#','.'],	# (#) - unplayable slot
-					 #['.','#','.','#','.','#','.','#'],	# (.) - free slot
-					 #['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
-					 #['.','#','.','#','B','#','.','#'],	# (B) - black checker piece
+					 #['B','#','b','#','b','#','.','#'],	# (b) - black piece
+					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
+					 #['R','#','b','#','b','#','b','#'],	# (.) - free slot
+					 #['#','.','#','.','#','.','#','r'],	# (R) - red checker piece
+					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
 					 #['#','.','#','.','#','.','#','.'],
 					 #['.','#','.','#','.','#','.','#']]
 		
-		self.selected_piece = None	# Set the selected piece
+		BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
+					 ['B','#','.','#','b','#','.','#'],	# (b) - black piece
+					 ['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
+					 ['R','#','.','#','b','#','b','#'],	# (.) - free slot
+					 ['#','.','#','.','#','r','#','r'],	# (R) - red checker piece
+					 ['.','#','.','#','.','#','.','#'],	# (B) - black checker piece
+					 ['#','.','#','.','#','.','#','.'],
+					 ['.','#','.','#','.','#','.','#']]
+		
+		self.RED_TURN = True
+		
 		self.board_image = pygame.image.load(file_name).convert()
 		self.red_pieces = []
 		self.black_pieces = []
+		self.selected_piece = None	# Set the selected piece
 		
 		self.TILE_X = self.board_image.get_size()[0]/8 		# number of pixels on x
 		self.TILE_Y = self.board_image.get_size()[1]/8 		# number of pixels on y
@@ -55,22 +90,20 @@ class Checkers(object):
 		for row in range(len(BOARD_MAP)):
 			for col in range(len(BOARD_MAP[0])):
 				if BOARD_MAP[row][col] == 'r':
-					p = Piece(self.RED_DEFAULT,(row,col),'r')
-					p.set_images(self.RED_DEFAULT, self.RED_DEFAULT_SELECTED)
+					p = RedPiece((row,col))
 					self.red_pieces.append(p)
 					
 				if BOARD_MAP[row][col] == 'b':
-					p = Piece(self.BLACK_DEFAULT,(row,col),'b')
-					p.set_images(self.BLACK_DEFAULT, self.BLACK_DEFAULT_SELECTED)
+					p = BlackPiece((row,col))
 					self.black_pieces.append(p)
 				
 				if BOARD_MAP[row][col] == 'R':										# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-					p = Piece(self.RED_CHECKER,(row,col),'R')
-					p.set_images(self.RED_CHECKER, self.RED_CHECKER_SELECTED)
+					p = RedPiece((row,col))											# remover esta parte após conclusão
+					p.promote()
 					self.red_pieces.append(p)
 				if BOARD_MAP[row][col] == 'B':
-					p = Piece(self.BLACK_CHECKER,(row,col),'B')
-					p.set_images(self.BLACK_CHECKER, self.BLACK_CHECKER_SELECTED)
+					p = BlackPiece((row,col))
+					p.promote()
 					self.black_pieces.append(p)										# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	
 	
@@ -81,86 +114,86 @@ class Checkers(object):
 				sys.exit(-1)
 			elif event.type == pygame.MOUSEBUTTONDOWN:
 				if event.button == 1:	# left button
-					if(self.RED_TURN):	# red turn to select one piece
-						if not self.selected_piece:
-							self.select_piece(self.red_pieces)
-						else:
-							self.move_piece(self.selected_piece)
+					if(self.RED_TURN):
+						pieces = self.red_pieces		#  red  turn to select one piece
+					else: pieces = self.black_pieces	# black turn to select one piece
 					
-					elif(not self.RED_TURN): # black turn to select one piece
-						if not self.selected_piece:
-							self.select_piece(self.black_pieces)
-						else:
-							self.move_piece(self.selected_piece)
-						
-	
-	
+					if not self.selected_piece and not CAPTURE_MODE:
+						self.select_piece(pieces)
+					else:
+						self.move_piece(pieces)
+
+
 	def select_piece(self,pieces):
-		pieces_cap,moves,captures = [],[],[]
+		moves = self.generate_moves(pieces)
 		piece = None
+		
+		print "Moves"
+		for m in moves:
+			print m
+		print "====="
+		
 		for p in pieces:
-			m,c = p.generate_moves()
-			if len(c) > 0:
-				pieces_cap.append(p)
-				moves.append(m)
-				captures.append(c)
 			if p.rect.collidepoint(pygame.mouse.get_pos()):
 				piece = p
-		if len(captures) > 0:
-			if piece in pieces_cap:
-				self.selected_piece = piece
-				self.selected_piece.set_image_selected()
-			else:
-				print "Peca Invalida"
-				return
-		elif piece != None:
-			self.selected_piece = piece
-			self.selected_piece.set_image_selected()
-		else:
-			print "selecione uma peca"
-			return
-			
-				
-		printBoardMap()
-		print self.selected_piece.generate_moves()[0]		#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-				
-	
-	
-	def move_piece(self,piece):
-		x_m,y_m = pygame.mouse.get_pos()
-		col = x_m/self.TILE_X
-		row = y_m/self.TILE_Y
 		
-		if  self.selected_piece.rect.collidepoint(pygame.mouse.get_pos()):
+		if piece:
+			for m in moves:
+				if piece.position == m[0].position:
+					self.selected_piece = piece
+					self.selected_piece.set_image_selected()
+					break
+			if not self.selected_piece:
+				print "Peca Invalida"
+		else: print "Selecione uma Peca"
+		
+		
+		#print "+++++++++++++++++++"
+				
+	
+	
+	def move_piece(self,pieces):
+		global CAPTURE_MODE
+		x_m,y_m = pygame.mouse.get_pos()
+		row = y_m/self.TILE_Y
+		col = x_m/self.TILE_X
+		
+		if  self.selected_piece.rect.collidepoint(pygame.mouse.get_pos()) and not CAPTURE_MODE:
 			self.selected_piece.set_image_default()
 			self.selected_piece = None
 		else:
-			i = self.selected_piece.is_next_move(row,col)
-			if i >= 0:
+			moves = self.selected_piece.get_moves(BOARD_MAP)
+			
+			i = 0
+			for i in range(len(moves)):
+				if(moves[i][0] == (row,col)):
+					break
+				i += 1
+			# se existir o movimento - mover
+			if i < len(moves):
+				# se tiver captura - iniciar CAPTURE_MODE
+				if len(moves[i][1]) > 0:
+					CAPTURE_MODE = True
+					
+			
+			
+			for i in range(len(mov[1])):
 				x_p, y_p = self.selected_piece.position
-				
-				m,c = self.selected_piece.generate_moves()
-				if len(c):
-					self.remove_piece(c[i])
-				
-				self.selected_piece.position = (row,col)
-				
-				if self.selected_piece.group == 'r':
-					if self.selected_piece.position[0] == 7:
-						self.selected_piece.promote(self.RED_CHECKER, self.RED_CHECKER_SELECTED)
-				elif self.selected_piece.group == 'b':
-					if self.selected_piece.position[0] == 0:
-						self.selected_piece.promote(self.BLACK_CHECKER, self.BLACK_CHECKER_SELECTED)
-				
-				BOARD_MAP[row][col] = self.selected_piece.group
-				BOARD_MAP[x_p][y_p] = '.'
-				self.selected_piece.set_image_default()
-				self.selected_piece = None
-				self.RED_TURN = not self.RED_TURN
-			else:
-				print "Jogada Invalida"
-				return
-		#printBoardMap()
+				if (row,col) == mov[1][i]:
+					#print '->',mov[1][i],row,col
+					BOARD_MAP[x_p][y_p] = '.'
+					BOARD_MAP[row][col] = self.selected_piece.group
+					#self.remove_piece(mov[2][i])
+					self.selected_piece.position = (row,col)
+					
+				if len(mov[2]) == 0:
+					self.selected_piece.set_image_default()
+					self.selected_piece = None
+					self.RED_TURN = not self.RED_TURN
+					return
+			
+			print "Jogada Invalida"
+	
 	
 	
 	def remove_piece(self, pos):
@@ -182,19 +215,115 @@ class Checkers(object):
 			x,y = piece.position
 			piece.rect = screen.blit(piece.surface,(y*self.TILE_Y,x*self.TILE_X))
 	
+	
+	def capture_pieces(self,board,piece):
+		"""
+			método invocado no modo de captura (CAPTURE_MODE)
+			responsável por analisar as capturas em sequência
+			possíveis e retornar o movimento (ou sequencia de
+			jogadas) que tem maior número de capturas.
+		"""
+		moves = piece.get_moves(board)
+		
+		#print "--> capture moves",piece.position,moves
+		#for i in range(len(moves[1])):
+			#print moves[0][i],moves[1][i]
+		#print "<-- capture moves"
+		
+		
+		
+		if len(moves[1]) == 0:		# se não tiver capturas seguintes
+			return 0,None,None		# retornar 0 para o número de capturas e None para a movimentação seguinte e a captura realizada
+		
+		count = 0
+		next_move = []
+		capt_move = []
+		for i in range(len(moves[0])): 		# para cada movimento da peça - verificar o número de capturas realizadas
+			#print "movimento:",moves[0][i]
+			px,py = piece.position
+			board[px][py] = '.'
+			b = copy.deepcopy(board)
+			p = copy.deepcopy(piece)
+			p.position = moves[0][i]
+			b[moves[0][i][0]][moves[0][i][1]] = p.group
+			b[moves[1][i][0]][moves[1][i][1]] = 'x'
+			#print ">>b"
+			#for l in b:
+				#print l
+			#print "<<b"
+			c,nmov,cap = self.capture_pieces(b, p)
+			c += 1
+			if c > count:
+				count = c
+				next_move = moves[0][i]
+				capt_move = moves[1][i]
+		
+		return count, next_move, capt_move
+		
+	
+	
+	def generate_moves(self,pieces):
+		"""
+			método  responsável por analisar  e  retornar
+			as jogadas possíveis de um conjunto de peças.
+		"""
+		"""
+			OBS.: para jogadas com captura -> verificar o
+			número capturas para cada jogada, e armazenar
+			a jogada com maior número de capturas.
+			- Iniciar CAPTURE_MODE
+		"""
+		moves = []
+		captures = False
+		for p in pieces:
+			m = p.get_moves(BOARD_MAP)
+			if len(m[0]) > 0: 		# SE TIVER JOGADAS
+				if len(m[1]) > 0 and not captures: 	# se tiver capturas mas nenhuma captura adicionada
+					moves = []						# limpar jogadas
+					captures = True					# apenas jogadas com capturas
+				if captures:									# se já tem capturas
+					if len(m[1]) > 0:							# adicionar apenas jogadas com capturas
+						moves.append([p, m[0],m[1]])
+				else: moves.append([p, m[0],m[1]])		# se não tiver capturas, adicionar jogada
+		
+		# até aqui moves representa as jogadas possíveis
+		# caso existam jogadas com capturas, verificar
+		# qual tem o maior número de capturas
+		if captures:
+			mc = [[None,[],[]]] # move/capture = [Pience,[(moves)],[(captures)]
+			capt_num = 0
+			
+			print ">> capturas"
+			for m in moves: # para cada peça com movimentos de captura
+				piece = m[0]
+				#self.capture_pieces(copy.deepcopy(BOARD_MAP), copy.copy(piece))
+				c,mov,cap = self.capture_pieces(copy.deepcopy(BOARD_MAP), copy.copy(piece))
+				print "analise: ",m[0].position
+				print mov,c,cap
+				
+				if c > capt_num:
+					capt_num = c
+					mc = []
+				if c == capt_num:
+					mc.append([piece,[mov],[cap]])
+				
+			print "<< capturas"
+			print "--------> movimentos e capturas"
+			print mc
+			print "<-------- movimentos e capturas"
+			return mc
+		else:
+			return moves
+
 
 class Piece(object):
+	global BOARD_MAP
+
 	def __init__(self,surface,pos,group):
-		global BOARD_MAP
 		self.surface = surface
 		self.position = pos
 		self.group = group
 		self.rect = None
-		
-	def set_images(self,default,selected):
-		""" Define the images for a piece """
-		self.default_image = default
-		self.selected_image = selected
 	
 	def set_image_default(self):
 		""" Define the image for a not selected piece """
@@ -211,125 +340,164 @@ class Piece(object):
 				return i
 		return -1
 	
-	def promote(self, default, selected):
-		self.set_images(default, selected)
-		if self.group == 'r':
-			self.group = 'R'
-		elif self.group == 'b':
-			self.group = 'B'
+	@abstractmethod
+	def front_row(self,row):
+		pass
 	
-	def generate_moves(self):
-		moves = []
-		captures = []
+	@abstractmethod
+	def back_row(self,row):
+		pass
+	
+	@abstractmethod
+	def left_col(self, col):
+		pass
+	
+	@abstractmethod
+	def right_col(self, col):
+		pass
+	
+	def is_move(self,row,col):
+		if ( row < 8 and row >= 0 and col < 8 and col >= 0 ):
+			return True
+		else: return False
+	
+	def get_moves(self,board):
+		moves = [[],[]]
+		captures = False
+		
 		row,col = self.position
-		if BOARD_MAP[row][col] == 'r':
-			new_row = row + 1
-			new_col = col + 1
-			if new_col < 8:
-				new_position = BOARD_MAP[new_row][new_col]
-				if new_position == '.' and len(captures) == 0:
-					moves.append((new_row,new_col))
-				elif new_position == 'b' or new_position == 'B':
-					new_row += 1
-					new_col += 1
-					if new_row < 8 and new_col < 8:
-						new_position = BOARD_MAP[new_row][new_col]
-						if new_position == '.':
-							if len(captures) == 0:
-								moves = []
-							captures.append((new_row-1,new_col-1))
-							moves.append((new_row,new_col))
-			
-			new_row = row + 1
-			new_col = col - 1
-			if new_col >= 0:
-				new_position = BOARD_MAP[new_row][new_col]
-				if new_position == '.' and len(captures) == 0:
-					moves.append((new_row,new_col))
-				elif new_position == 'b' or new_position == 'B':
-					new_row += 1
-					new_col -= 1
-					if new_row < 8 and new_col >= 0:
-						new_position = BOARD_MAP[new_row][new_col]
-						if new_position == '.':
-							if len(captures) == 0:
-								moves = []
-							captures.append((new_row-1,new_col+1))
-							moves.append((new_row,new_col))
+		      
+		new_row = self.front_row(row)
+		new_col = self.left_col(col)
+		if self.is_move(new_row,new_col):
+			if board[new_row][new_col] == '.' and not captures:
+				moves[0].append((new_row,new_col))
+			elif board[new_row][new_col] in self.OPPONENT:
+				new_row = self.front_row(new_row)
+				new_col = self.left_col(new_col)
+				if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
+					if not captures:
+						moves = [[],[]]
+						captures = True
+					moves[0].append((new_row,new_col))
+					moves[1].append((self.back_row(new_row),self.right_col(new_col)))
 		
+		new_row = self.front_row(row)
+		new_col = self.right_col(col)
+		if self.is_move(new_row,new_col):
+			if board[new_row][new_col] == '.' and not captures:
+				moves[0].append((new_row,new_col))
+			elif board[new_row][new_col] in self.OPPONENT:
+				new_row = self.front_row(new_row)
+				new_col = self.right_col(new_col)
+				if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
+					if not captures:
+						moves = [[],[]]
+						captures = True
+					moves[0].append((new_row,new_col))
+					moves[1].append((self.back_row(new_row),self.left_col(new_col)))
 		
-		elif BOARD_MAP[row][col] == 'b':
-			new_row = row - 1
-			new_col = col + 1
-			if new_col < 8:
-				new_position = BOARD_MAP[new_row][new_col]
-				if new_position == '.' and len(captures) == 0:
-					moves.append((new_row,new_col))
-				elif new_position == 'r' or new_position == 'R':
-					new_row -= 1
-					new_col += 1
-					if new_row >= 0 and new_col < 8:
-						new_position = BOARD_MAP[new_row][new_col]
-						if new_position == '.':
-							if len(captures) == 0:
-								moves = []
-							captures.append((new_row+1,new_col-1))
-							moves.append((new_row,new_col))
-			
-			new_row = row - 1
-			new_col = col - 1
-			if new_col >= 0:
-				new_position = BOARD_MAP[new_row][new_col]
-				if new_position == '.' and len(captures) == 0:
-					moves.append((new_row,new_col))
-				elif new_position == 'r' or new_position == 'R':
-					new_row -= 1
-					new_col -= 1
-					if new_row >= 0 and new_col >= 0:
-						new_position = BOARD_MAP[new_row][new_col]
-						if new_position == '.':
-							if len(captures) == 0:
-								moves = []
-							captures.append((new_row+1,new_col+1))
-							moves.append((new_row,new_col))
+		new_row = self.back_row(row)
+		new_col = self.left_col(col)
+		if self.is_move(new_row,new_col) and board[new_row][new_col] in self.OPPONENT:
+			new_row = self.back_row(new_row)
+			new_col = self.left_col(new_col)
+			if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
+				if not captures:
+					moves = [[],[]]
+					captures = True
+				moves[0].append((new_row,new_col))
+				moves[1].append((self.front_row(new_row),self.right_col(new_col)))
 		
-		elif BOARD_MAP[row][col] == 'R' or BOARD_MAP[row][col] == 'B':
-			new_row = row + 1
-			new_col = col + 1
-			while( new_row < 8 and new_col < 8):
-				moves.append((new_row,new_col))
-				new_row += 1
-				new_col += 1
-			
-			new_row = row + 1
-			new_col = col - 1
-			while( new_row < 8 and new_col >= 0):
-				moves.append((new_row,new_col))
-				new_row += 1
-				new_col -= 1
-			
-			new_row = row - 1
-			new_col = col - 1
-			while( new_row >= 0 and new_col >= 0):
-				moves.append((new_row,new_col))
-				new_row -= 1
-				new_col -= 1
-			
-			new_row = row - 1
-			new_col = col + 1
-			while( new_row >= 0 and new_col < 8):
-				moves.append((new_row,new_col))
-				new_row -= 1
-				new_col += 1
+		new_row = self.back_row(row)
+		new_col = self.right_col(col)
+		if self.is_move(new_row,new_col) and board[new_row][new_col] in self.OPPONENT:
+			new_row = self.back_row(new_row)
+			new_col = self.right_col(new_col)
+			if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
+				if not captures:
+					moves = [[],[]]
+					captures = True
+				moves[0].append((new_row,new_col))
+				moves[1].append((self.front_row(new_row),self.left_col(new_col)))
 		
-		return moves,captures
-	#-- generate_moves() ---------------------------------
+		return moves
+
+
+
+class RedPiece(Piece):
+	global RED_DEFAULT, RED_DEFAULT_SELECTED
+	global RED_CHECKER, RED_CHECKER_SELECTED
+	
+	OPPONENT = ['b','B']
+	MIN_COL = 0 # left
+	MAX_COL = 7 # right
+	MIN_ROW = 7 # back
+	MAX_ROW = 0 # forward
+	
+	def __init__(self,pos):
+		Piece.__init__(self,RED_DEFAULT,pos,'r')
+		self.default_image  = RED_DEFAULT
+		self.selected_image = RED_DEFAULT_SELECTED
+
+	def promote(self):
+		self.group = 'R'
+		self.surface =        RED_CHECKER
+		self.default_image  = RED_CHECKER
+		self.selected_image = RED_CHECKER_SELECTED
+	
+	def front_row(self,row):
+		return row - 1
+	
+	def back_row(self, row):
+		return row + 1
+	
+	def left_col(self,col):
+		return col - 1
+	
+	def right_col(self,col):
+		return col + 1
+	
+
+class BlackPiece(Piece):
+	global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
+	global BLACK_CHECKER, BLACK_CHECKER_SELECTED
+	
+	OPPONENT = ['r','R']
+	MIN_COL = 7 # left
+	MAX_COL = 0 # right
+	MIN_ROW = 0 # back
+	MAX_ROW = 7 # forward
+	
+	def __init__(self,pos):
+		Piece.__init__(self,BLACK_DEFAULT,pos,'b')
+		self.default_image  = BLACK_DEFAULT
+		self.selected_image = BLACK_DEFAULT_SELECTED
+
+	def promote(self):
+		self.group = 'B'
+		self.surface =        BLACK_CHECKER
+		self.default_image  = BLACK_CHECKER
+		self.selected_image = BLACK_CHECKER_SELECTED
+	
+	def front_row(self,row):
+		return row + 1
+	
+	def back_row(self, row):
+		return row - 1
+	
+	def left_col(self,col):
+		return col + 1
+	
+	def right_col(self,col):
+		return col - 1
 
 
 if __name__ == "__main__":
 	pygame.init()
 	pygame.display.set_caption("Checkers")
 	
+	os.environ['SDL_VIDEO_WINDOW_POS'] = '500,100'
 	screen = pygame.display.set_mode((0,0))
 	
 	checkers = Checkers()
