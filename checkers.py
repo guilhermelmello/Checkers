@@ -1,12 +1,18 @@
 #-*- coding: utf-8 -*-
 
 """
-	ONDE PAREI:
-		REIMPLEMENTAR O MÉTODO DE MOVIMENTAÇÃO DAS PEÇAS
+ONDE PAREI:
+	- 1: ANALISAR E CONSERTAR O MÉTODO capture_pieces()
+		Obs.: está retornando apenas uma possibilidade por peça - deve retornar uma lista com as possibilidades
+
 """
 
 
+"""
+CONFERÊNCIA
 
+- método get_moves() está retornando os movimentos corretamente (testado para peças brancas)
+"""
 
 import sys, pygame, copy
 import os
@@ -67,14 +73,23 @@ class Checkers(object):
 					 #['#','.','#','.','#','.','#','.'],
 					 #['.','#','.','#','.','#','.','#']]
 		
+		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
+					 #['B','#','.','#','b','#','.','#'],	# (b) - black piece
+					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
+					 #['R','#','.','#','b','#','b','#'],	# (.) - free slot
+					 #['#','.','#','.','#','r','#','r'],	# (R) - red checker piece
+					 #['.','#','.','#','.','#','.','#'],	# (B) - black checker piece
+					 #['#','.','#','.','#','.','#','.'],
+					 #['.','#','.','#','.','#','.','#']]
+		
 		BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 ['B','#','.','#','b','#','.','#'],	# (b) - black piece
+					 ['.','#','.','#','.','#','.','#'],	# (b) - black piece
 					 ['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 ['R','#','.','#','b','#','b','#'],	# (.) - free slot
-					 ['#','.','#','.','#','r','#','r'],	# (R) - red checker piece
+					 ['.','#','.','#','.','#','.','#'],	# (.) - free slot
+					 ['#','b','#','.','#','b','#','r'],	# (R) - red checker piece
 					 ['.','#','.','#','.','#','.','#'],	# (B) - black checker piece
-					 ['#','.','#','.','#','.','#','.'],
-					 ['.','#','.','#','.','#','.','#']]
+					 ['#','.','#','b','#','b','#','.'],
+					 ['.','#','.','#','r','#','.','#']]
 		
 		self.RED_TURN = True
 		
@@ -128,10 +143,10 @@ class Checkers(object):
 		moves = self.generate_moves(pieces)
 		piece = None
 		
-		print "Moves"
-		for m in moves:
-			print m
-		print "====="
+		#print "Moves"
+		#for m in moves:
+			#print m
+		#print "====="
 		
 		for p in pieces:
 			if p.rect.collidepoint(pygame.mouse.get_pos()):
@@ -158,41 +173,91 @@ class Checkers(object):
 		row = y_m/self.TILE_Y
 		col = x_m/self.TILE_X
 		
+		# se a peça de selecionada for clicada, será deselecionada caso esteja em modo de captura
 		if  self.selected_piece.rect.collidepoint(pygame.mouse.get_pos()) and not CAPTURE_MODE:
 			self.selected_piece.set_image_default()
 			self.selected_piece = None
 		else:
-			moves = self.selected_piece.get_moves(BOARD_MAP)
+			# senão irá tentar mover a peça para a nova posição
+			print "===========> Move Piece"
 			
-			i = 0
-			for i in range(len(moves)):
-				if(moves[i][0] == (row,col)):
-					break
-				i += 1
-			# se existir o movimento - mover
-			if i < len(moves):
-				# se tiver captura - iniciar CAPTURE_MODE
-				if len(moves[i][1]) > 0:
-					CAPTURE_MODE = True
-					
+			if CAPTURE_MODE:
+				moves = self.generate_moves([self.selected_piece])
+			else:
+				moves = self.generate_moves(pieces)
 			
+			print "Movimentos"
+			for m in moves:
+				print m[0].position,m[1],m[2]
 			
-			for i in range(len(mov[1])):
+			move = []
+			for m in moves:
+				if m[0].position == self.selected_piece.position:
+					move = m
+			if move:
+				print "-------> mover",self.selected_piece.position
+				print move[0].position,move[1],move[2]
+				
 				x_p, y_p = self.selected_piece.position
-				if (row,col) == mov[1][i]:
-					#print '->',mov[1][i],row,col
-					BOARD_MAP[x_p][y_p] = '.'
-					BOARD_MAP[row][col] = self.selected_piece.group
-					#self.remove_piece(mov[2][i])
-					self.selected_piece.position = (row,col)
-					
-				if len(mov[2]) == 0:
-					self.selected_piece.set_image_default()
-					self.selected_piece = None
-					self.RED_TURN = not self.RED_TURN
-					return
+				for i in range(len(move[1])):				# para cada movimento possivel
+					print move[1][i]
+					if (row,col) == move[1][i]:
+						print "Jogada Válida"
+						BOARD_MAP[x_p][y_p] = '.'
+						BOARD_MAP[row][col] = self.selected_piece.group
+						self.selected_piece.position = (row,col)
+						if len(move[2]) > 0:				# a jogada posssui capturas
+							CAPTURE_MODE = True
+							print "--Remover",move[2][i]
+							self.remove_piece(move[2][i])	# remover a peça capturada
+							printBoardMap()
+						else:								
+							self.selected_piece.set_image_default()
+							self.selected_piece = None
+							self.RED_TURN = not self.RED_TURN
+							CAPTURE_MODE = False
+							return
+						break
+				
+				
+				print "<------- mover"
+				print "p.position = ",self.selected_piece.position
+				
+				
+				
+			else:
+				print "Jogada Inválida",self.selected_piece.position
 			
-			print "Jogada Invalida"
+			print "<=========== Move Piece"
+			#i = 0
+			#for i in range(len(moves)):
+				#if(moves[i][0] == (row,col)):
+					#break
+				#i += 1
+			## se existir o movimento - mover
+			#if i < len(moves):
+				## se tiver captura - iniciar CAPTURE_MODE
+				#if len(moves[i][1]) > 0:
+					#CAPTURE_MODE = True
+					
+			
+			
+			#for i in range(len(mov[1])):
+				#x_p, y_p = self.selected_piece.position
+				#if (row,col) == mov[1][i]:
+					##print '->',mov[1][i],row,col
+					#BOARD_MAP[x_p][y_p] = '.'
+					#BOARD_MAP[row][col] = self.selected_piece.group
+					##self.remove_piece(mov[2][i])
+					#self.selected_piece.position = (row,col)
+					
+				#if len(mov[2]) == 0:
+					#self.selected_piece.set_image_default()
+					#self.selected_piece = None
+					#self.RED_TURN = not self.RED_TURN
+					#return
+			
+			#print "Jogada Invalida"
 	
 	
 	
@@ -204,6 +269,7 @@ class Checkers(object):
 			if p.position == pos:
 				pieces.remove(p)
 				BOARD_MAP[pos[0]][pos[1]] = '.'
+				print "Peça removida",pos
 				break
 	
 	def update(self,screen):
@@ -224,12 +290,7 @@ class Checkers(object):
 			jogadas) que tem maior número de capturas.
 		"""
 		moves = piece.get_moves(board)
-		
-		#print "--> capture moves",piece.position,moves
-		#for i in range(len(moves[1])):
-			#print moves[0][i],moves[1][i]
-		#print "<-- capture moves"
-		
+		#print "cp:",moves
 		
 		
 		if len(moves[1]) == 0:		# se não tiver capturas seguintes
@@ -247,16 +308,18 @@ class Checkers(object):
 			p.position = moves[0][i]
 			b[moves[0][i][0]][moves[0][i][1]] = p.group
 			b[moves[1][i][0]][moves[1][i][1]] = 'x'
-			#print ">>b"
-			#for l in b:
-				#print l
-			#print "<<b"
+			
 			c,nmov,cap = self.capture_pieces(b, p)
 			c += 1
 			if c > count:
 				count = c
-				next_move = moves[0][i]
-				capt_move = moves[1][i]
+				next_move = [moves[0][i]]
+				capt_move = [moves[1][i]]
+				#print "Iniciado com",moves[0][i],moves[1][i]
+			elif c == count:
+				next_move.append(moves[0][i])
+				capt_move.append(moves[1][i])
+				#print "Inserido",moves[0][i],moves[1][i]
 		
 		return count, next_move, capt_move
 		
@@ -277,6 +340,7 @@ class Checkers(object):
 		captures = False
 		for p in pieces:
 			m = p.get_moves(BOARD_MAP)
+			#print "==>>",p.position,m
 			if len(m[0]) > 0: 		# SE TIVER JOGADAS
 				if len(m[1]) > 0 and not captures: 	# se tiver capturas mas nenhuma captura adicionada
 					moves = []						# limpar jogadas
@@ -286,31 +350,35 @@ class Checkers(object):
 						moves.append([p, m[0],m[1]])
 				else: moves.append([p, m[0],m[1]])		# se não tiver capturas, adicionar jogada
 		
+		#print "-> Moves:"
+		#for kk in moves:
+			#print kk[0].position,kk[1],kk[2]
+		
 		# até aqui moves representa as jogadas possíveis
 		# caso existam jogadas com capturas, verificar
 		# qual tem o maior número de capturas
+		
 		if captures:
-			mc = [[None,[],[]]] # move/capture = [Pience,[(moves)],[(captures)]
+			mc = [[None,[],[]]] # move/capture = [Piece,[(moves)],[(captures)]
 			capt_num = 0
 			
-			print ">> capturas"
+			
 			for m in moves: # para cada peça com movimentos de captura
+				#print "m:",m
 				piece = m[0]
-				#self.capture_pieces(copy.deepcopy(BOARD_MAP), copy.copy(piece))
+				
+				#print "analise: ",m[0].position
 				c,mov,cap = self.capture_pieces(copy.deepcopy(BOARD_MAP), copy.copy(piece))
-				print "analise: ",m[0].position
-				print mov,c,cap
+				#print mov,c,cap
 				
 				if c > capt_num:
 					capt_num = c
 					mc = []
 				if c == capt_num:
-					mc.append([piece,[mov],[cap]])
+					mc.append([piece,mov,cap])
 				
-			print "<< capturas"
-			print "--------> movimentos e capturas"
-			print mc
-			print "<-------- movimentos e capturas"
+			#print "mc",mc
+			
 			return mc
 		else:
 			return moves
@@ -366,61 +434,218 @@ class Piece(object):
 		captures = False
 		
 		row,col = self.position
-		      
-		new_row = self.front_row(row)
-		new_col = self.left_col(col)
-		if self.is_move(new_row,new_col):
-			if board[new_row][new_col] == '.' and not captures:
-				moves[0].append((new_row,new_col))
-			elif board[new_row][new_col] in self.OPPONENT:
-				new_row = self.front_row(new_row)
+		
+		#	 MOVEMENTO DE PEÇAS SIMPLES 	#
+		if self.group == 'r' or self.group == 'b':
+			new_row = self.front_row(row)
+			new_col = self.left_col(col)
+			if self.is_move(new_row,new_col):
+				if board[new_row][new_col] == '.' and not captures:
+					moves[0].append((new_row,new_col))
+				elif board[new_row][new_col] in self.OPPONENT:
+					new_row = self.front_row(new_row)
+					new_col = self.left_col(new_col)
+					if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
+						if not captures:
+							moves = [[],[]]
+							captures = True
+						moves[0].append((new_row,new_col))
+						moves[1].append((self.back_row(new_row),self.right_col(new_col)))
+			
+			new_row = self.front_row(row)
+			new_col = self.right_col(col)
+			if self.is_move(new_row,new_col):
+				if board[new_row][new_col] == '.' and not captures:
+					moves[0].append((new_row,new_col))
+				elif board[new_row][new_col] in self.OPPONENT:
+					new_row = self.front_row(new_row)
+					new_col = self.right_col(new_col)
+					if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
+						if not captures:
+							moves = [[],[]]
+							captures = True
+						moves[0].append((new_row,new_col))
+						moves[1].append((self.back_row(new_row),self.left_col(new_col)))
+			
+			new_row = self.back_row(row)
+			new_col = self.left_col(col)
+			if self.is_move(new_row,new_col) and board[new_row][new_col] in self.OPPONENT:
+				new_row = self.back_row(new_row)
 				new_col = self.left_col(new_col)
 				if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
 					if not captures:
 						moves = [[],[]]
 						captures = True
 					moves[0].append((new_row,new_col))
-					moves[1].append((self.back_row(new_row),self.right_col(new_col)))
-		
-		new_row = self.front_row(row)
-		new_col = self.right_col(col)
-		if self.is_move(new_row,new_col):
-			if board[new_row][new_col] == '.' and not captures:
-				moves[0].append((new_row,new_col))
-			elif board[new_row][new_col] in self.OPPONENT:
-				new_row = self.front_row(new_row)
+					moves[1].append((self.front_row(new_row),self.right_col(new_col)))
+			
+			new_row = self.back_row(row)
+			new_col = self.right_col(col)
+			if self.is_move(new_row,new_col) and board[new_row][new_col] in self.OPPONENT:
+				new_row = self.back_row(new_row)
 				new_col = self.right_col(new_col)
 				if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
 					if not captures:
 						moves = [[],[]]
 						captures = True
 					moves[0].append((new_row,new_col))
-					moves[1].append((self.back_row(new_row),self.left_col(new_col)))
+					moves[1].append((self.front_row(new_row),self.left_col(new_col)))
 		
-		new_row = self.back_row(row)
-		new_col = self.left_col(col)
-		if self.is_move(new_row,new_col) and board[new_row][new_col] in self.OPPONENT:
-			new_row = self.back_row(new_row)
-			new_col = self.left_col(new_col)
-			if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
-				if not captures:
+		#	 FIM MOVIMENTO DAS PEÇAS SIMPLES	#
+		
+		#	MOVIMENTO DE DAMAS	#
+		elif self.group == 'R' or self.group == 'B':
+			#	  DAMAS -> FRENTE / ESQUERDA 	# 
+			new_row = self.front_row(row)
+			new_col = self.left_col(col)
+			m = [[],[]]	# possíveis movimentos gerados na diagonal
+			eat = None	# armazena a peça capturada na diagonal
+			while(self.is_move(new_row,new_col)):
+				if board[new_row][new_col] in self.FRIEND:
+					break
+				elif board[new_row][new_col] in self.OPPONENT:
+					if not eat:
+						r = self.front_row(new_row)
+						c = self.left_col(new_col)
+						if self.is_move(r,c) and board[r][c] == ".":
+							captures = True
+							eat = (new_row,new_col)
+							m = [[],[]]
+						else:
+							break
+				elif board[new_row][new_col] == '.':
+					m[0].append((new_row,new_col))
+					if eat:
+						m[1].append(eat)
+				new_row = self.front_row(new_row)
+				new_col = self.left_col(new_col)
+			
+			if len(m[1]) > 0:
+				if len(moves[1]) == 0:
 					moves = [[],[]]
-					captures = True
-				moves[0].append((new_row,new_col))
-				moves[1].append((self.front_row(new_row),self.right_col(new_col)))
-		
-		new_row = self.back_row(row)
-		new_col = self.right_col(col)
-		if self.is_move(new_row,new_col) and board[new_row][new_col] in self.OPPONENT:
-			new_row = self.back_row(new_row)
-			new_col = self.right_col(new_col)
-			if self.is_move(new_row,new_col) and board[new_row][new_col] == '.':
-				if not captures:
+				for i in m[0]:
+					moves[0].append(i)
+				for i in m[1]:
+					moves[1].append(i)
+			elif not captures:
+				for i in m[0]:
+					moves[0].append(i)
+			#	  FIM DAMAS -> FRENTE / ESQUERDA 	# 
+			
+			#	  DAMAS -> FRENTE / DIREITA 	# 
+			new_row = self.front_row(row)
+			new_col = self.right_col(col)
+			m = [[],[]]	# possíveis movimentos gerados na diagonal
+			eat = None	# armazena a peça capturada na diagonal
+			while(self.is_move(new_row,new_col)):
+				if board[new_row][new_col] in self.FRIEND:
+					break
+				elif board[new_row][new_col] in self.OPPONENT:
+					if not eat:
+						r = self.front_row(new_row)
+						c = self.right_col(new_col)
+						if self.is_move(r,c) and board[r][c] == ".":
+							captures = True
+							eat = (new_row,new_col)
+							m = [[],[]]
+						else:
+							break
+				elif board[new_row][new_col] == '.':
+					m[0].append((new_row,new_col))
+					if eat:
+						m[1].append(eat)
+				new_row = self.front_row(new_row)
+				new_col = self.right_col(new_col)
+			
+			if len(m[1]) > 0:
+				if len(moves[1]) == 0:
 					moves = [[],[]]
-					captures = True
-				moves[0].append((new_row,new_col))
-				moves[1].append((self.front_row(new_row),self.left_col(new_col)))
-		
+				for i in m[0]:
+					moves[0].append(i)
+				for i in m[1]:
+					moves[1].append(i)
+			elif not captures:
+				for i in m[0]:
+					moves[0].append(i)
+			#	FIM DAMAS -> FRENTE / DIREITA	#
+			
+			#	  DAMAS -> ATRÁS / ESQUERDA 	# 
+			new_row = self.back_row(row)
+			new_col = self.left_col(col)
+			m = [[],[]]	# possíveis movimentos gerados na diagonal
+			eat = None	# armazena a peça capturada na diagonal
+			while(self.is_move(new_row,new_col)):
+				if board[new_row][new_col] in self.FRIEND:
+					break
+				elif board[new_row][new_col] in self.OPPONENT:
+					if not eat:
+						r = self.back_row(new_row)
+						c = self.left_col(new_col)
+						if self.is_move(r,c) and board[r][c] == ".":
+							captures = True
+							eat = (new_row,new_col)
+							m = [[],[]]
+						else:
+							break
+				elif board[new_row][new_col] == '.':
+					m[0].append((new_row,new_col))
+					if eat:
+						m[1].append(eat)
+				new_row = self.back_row(new_row)
+				new_col = self.left_col(new_col)
+			
+			if len(m[1]) > 0:
+				if len(moves[1]) == 0:
+					moves = [[],[]]
+				for i in m[0]:
+					moves[0].append(i)
+				for i in m[1]:
+					moves[1].append(i)
+			elif not captures:
+				for i in m[0]:
+					moves[0].append(i)
+			
+			#	FIM DAMAS -> ATRÁS / ESQUERDA	#
+			
+			#	  DAMAS -> ATRÁS / DIREITA 	# 
+			new_row = self.back_row(row)
+			new_col = self.right_col(col)
+			m = [[],[]]	# possíveis movimentos gerados na diagonal
+			eat = None	# armazena a peça capturada na diagonal
+			while(self.is_move(new_row,new_col)):
+				if board[new_row][new_col] in self.FRIEND:
+					break
+				elif board[new_row][new_col] in self.OPPONENT:
+					if not eat:
+						r = self.back_row(new_row)
+						c = self.right_col(new_col)
+						if self.is_move(r,c) and board[r][c] == ".":
+							captures = True
+							eat = (new_row,new_col)
+							m = [[],[]]
+						else:
+							break
+				elif board[new_row][new_col] == '.':
+					m[0].append((new_row,new_col))
+					if eat:
+						m[1].append(eat)
+				new_row = self.back_row(new_row)
+				new_col = self.right_col(new_col)
+			
+			if len(m[1]) > 0:
+				if len(moves[1]) == 0:
+					moves = [[],[]]
+				for i in m[0]:
+					moves[0].append(i)
+				for i in m[1]:
+					moves[1].append(i)
+			elif not captures:
+				for i in m[0]:
+					moves[0].append(i)
+			
+			#	FIM DAMAS -> ATRÁS / DIREITA	#
+			
+		#	 FIM MOVIMENTO DE DAMAS 	#
 		return moves
 
 
@@ -430,6 +655,7 @@ class RedPiece(Piece):
 	global RED_CHECKER, RED_CHECKER_SELECTED
 	
 	OPPONENT = ['b','B']
+	FRIEND = ['r','R']
 	MIN_COL = 0 # left
 	MAX_COL = 7 # right
 	MIN_ROW = 7 # back
@@ -464,6 +690,7 @@ class BlackPiece(Piece):
 	global BLACK_CHECKER, BLACK_CHECKER_SELECTED
 	
 	OPPONENT = ['r','R']
+	FRIEND = ['b','B']
 	MIN_COL = 7 # left
 	MAX_COL = 0 # right
 	MIN_ROW = 0 # back
