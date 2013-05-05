@@ -2,16 +2,9 @@
 
 """
 ONDE PAREI:
-	- 1: ANALISAR E CONSERTAR O MÉTODO capture_pieces()
-		Obs.: está retornando apenas uma possibilidade por peça - deve retornar uma lista com as possibilidades
-
-"""
-
-
-"""
-CONFERÊNCIA
-
-- método get_moves() está retornando os movimentos corretamente (testado para peças brancas)
+	- 1: ANALISAR E CONSERTAR O MÉTODO move_piece()
+		Obs.: implementar o modo de captura
+			- ao final de todas as capturas remover as peças e deselecionar a peça
 """
 
 import sys, pygame, copy
@@ -25,7 +18,7 @@ global RED_DEFAULT,     RED_DEFAULT_SELECTED
 global RED_CHECKER,     RED_CHECKER_SELECTED
 global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
 global BLACK_CHECKER, BLACK_CHECKER_SELECTED
-global CAPTURE_MODE
+global CAPTURE_MODE, CAPTURE_LIST
 
 
 def printBoardMap():
@@ -40,7 +33,7 @@ class Checkers(object):
 		global RED_CHECKER,     RED_CHECKER_SELECTED
 		global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
 		global BLACK_CHECKER, BLACK_CHECKER_SELECTED
-		global CAPTURE_MODE
+		global CAPTURE_MODE, CAPTURE_LIST
 		
 		RED_DEFAULT				= pygame.image.load("images/red_default.png"           ).convert_alpha()
 		RED_DEFAULT_SELECTED	= pygame.image.load("images/red_default_selected.png"  ).convert_alpha()
@@ -53,6 +46,7 @@ class Checkers(object):
 		BLACK_CHECKER_SELECTED	= pygame.image.load("images/black_checker_selected.png").convert_alpha()
 		
 		CAPTURE_MODE = False
+		CAPTURE_LIST = []
 		
 		
 		#BOARD_MAP = [['#','b','#','b','#','b','#','b'],		# (r) - red piece
@@ -64,14 +58,14 @@ class Checkers(object):
 					 #['#','r','#','r','#','r','#','r'],
 					 #['r','#','r','#','r','#','r','#']]
 		
-		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 #['B','#','b','#','b','#','.','#'],	# (b) - black piece
-					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 #['R','#','b','#','b','#','b','#'],	# (.) - free slot
-					 #['#','.','#','.','#','.','#','r'],	# (R) - red checker piece
-					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
-					 #['#','.','#','.','#','.','#','.'],
-					 #['.','#','.','#','.','#','.','#']]
+		BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
+					 ['B','#','b','#','b','#','.','#'],	# (b) - black piece
+					 ['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
+					 ['R','#','b','#','b','#','b','#'],	# (.) - free slot
+					 ['#','.','#','.','#','.','#','r'],	# (R) - red checker piece
+					 ['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
+					 ['#','.','#','.','#','.','#','.'],
+					 ['.','#','.','#','.','#','.','#']]
 		
 		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
 					 #['B','#','.','#','b','#','.','#'],	# (b) - black piece
@@ -82,14 +76,14 @@ class Checkers(object):
 					 #['#','.','#','.','#','.','#','.'],
 					 #['.','#','.','#','.','#','.','#']]
 		
-		BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 ['.','#','.','#','.','#','.','#'],	# (b) - black piece
-					 ['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 ['.','#','.','#','.','#','.','#'],	# (.) - free slot
-					 ['#','b','#','.','#','b','#','r'],	# (R) - red checker piece
-					 ['.','#','.','#','.','#','.','#'],	# (B) - black checker piece
-					 ['#','.','#','b','#','b','#','.'],
-					 ['.','#','.','#','r','#','.','#']]
+		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
+					 #['.','#','.','#','.','#','.','#'],	# (b) - black piece
+					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
+					 #['.','#','.','#','.','#','.','#'],	# (.) - free slot
+					 #['#','b','#','.','#','b','#','r'],	# (R) - red checker piece
+					 #['.','#','.','#','.','#','.','#'],	# (B) - black checker piece
+					 #['#','.','#','b','#','b','#','.'],
+					 #['.','#','.','#','r','#','.','#']]
 		
 		self.RED_TURN = True
 		
@@ -168,7 +162,7 @@ class Checkers(object):
 	
 	
 	def move_piece(self,pieces):
-		global CAPTURE_MODE
+		global CAPTURE_MODE, CAPTURE_LIST
 		x_m,y_m = pygame.mouse.get_pos()
 		row = y_m/self.TILE_Y
 		col = x_m/self.TILE_X
@@ -194,6 +188,7 @@ class Checkers(object):
 			for m in moves:
 				if m[0].position == self.selected_piece.position:
 					move = m
+					break
 			if move:
 				print "-------> mover",self.selected_piece.position
 				print move[0].position,move[1],move[2]
@@ -208,20 +203,48 @@ class Checkers(object):
 						self.selected_piece.position = (row,col)
 						if len(move[2]) > 0:				# a jogada posssui capturas
 							CAPTURE_MODE = True
-							print "--Remover",move[2][i]
-							self.remove_piece(move[2][i])	# remover a peça capturada
+							print "--add Remover",move[2][i][0],move[2][i][1]
+							BOARD_MAP[move[2][i][0]][move[2][i][1]] = 'x'
+							CAPTURE_LIST.append(move[2][i])	# remover a peça capturada
+							print "---->>>>",CAPTURE_LIST
 							printBoardMap()
-						else:								
-							self.selected_piece.set_image_default()
-							self.selected_piece = None
-							self.RED_TURN = not self.RED_TURN
-							CAPTURE_MODE = False
-							return
+						#else:								
+							#self.selected_piece.set_image_default()
+							#self.selected_piece = None
+							#self.RED_TURN = not self.RED_TURN
+							#CAPTURE_MODE = False
+							#return
 						break
 				
+				if CAPTURE_MODE:
+					#has_moves = self.generate_moves([self.selected_piece])
+					has_moves = self.selected_piece.get_moves(BOARD_MAP)
+					print "has moves",has_moves
+					if len(has_moves[1]) == 0:
+						print "MOVIMENTO COM CAPTURA"
+						CAPTURE_MODE = False
+						for i in CAPTURE_LIST:
+							self.remove_piece(i)
+						CAPTURE_LIST = []
+						if self.selected_piece.position[0] == self.selected_piece.MAX_ROW:
+							self.selected_piece.promote()
+						self.selected_piece.set_image_default()
+						self.selected_piece = None
+						self.RED_TURN = not self.RED_TURN
+				
+				elif not CAPTURE_MODE:
+					if self.selected_piece.position[0] == self.selected_piece.MAX_ROW:
+						self.selected_piece.promote()
+					for i in CAPTURE_LIST:
+						print "MOVIMENTO SIMPLES"
+						self.remove_piece(i.position)
+					CAPTURE_LIST = []
+					self.selected_piece.set_image_default()
+					self.selected_piece = None
+					self.RED_TURN = not self.RED_TURN
 				
 				print "<------- mover"
-				print "p.position = ",self.selected_piece.position
+				#print "p.position = ",self.selected_piece.position
 				
 				
 				
@@ -229,35 +252,6 @@ class Checkers(object):
 				print "Jogada Inválida",self.selected_piece.position
 			
 			print "<=========== Move Piece"
-			#i = 0
-			#for i in range(len(moves)):
-				#if(moves[i][0] == (row,col)):
-					#break
-				#i += 1
-			## se existir o movimento - mover
-			#if i < len(moves):
-				## se tiver captura - iniciar CAPTURE_MODE
-				#if len(moves[i][1]) > 0:
-					#CAPTURE_MODE = True
-					
-			
-			
-			#for i in range(len(mov[1])):
-				#x_p, y_p = self.selected_piece.position
-				#if (row,col) == mov[1][i]:
-					##print '->',mov[1][i],row,col
-					#BOARD_MAP[x_p][y_p] = '.'
-					#BOARD_MAP[row][col] = self.selected_piece.group
-					##self.remove_piece(mov[2][i])
-					#self.selected_piece.position = (row,col)
-					
-				#if len(mov[2]) == 0:
-					#self.selected_piece.set_image_default()
-					#self.selected_piece = None
-					#self.RED_TURN = not self.RED_TURN
-					#return
-			
-			#print "Jogada Invalida"
 	
 	
 	
@@ -271,6 +265,7 @@ class Checkers(object):
 				BOARD_MAP[pos[0]][pos[1]] = '.'
 				print "Peça removida",pos
 				break
+		
 	
 	def update(self,screen):
 		for piece in self.red_pieces:
