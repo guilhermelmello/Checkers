@@ -59,10 +59,10 @@ class Checkers(object):
 					 #['r','#','r','#','r','#','r','#']]
 		
 		BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 ['B','#','b','#','b','#','.','#'],	# (b) - black piece
-					 ['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 ['R','#','b','#','b','#','b','#'],	# (.) - free slot
-					 ['#','.','#','.','#','.','#','r'],	# (R) - red checker piece
+					 ['B','#','b','#','.','#','.','#'],	# (b) - black piece
+					 ['#','.','#','.','#','r','#','.'],	# (#) - unplayable slot
+					 ['.','#','b','#','b','#','b','#'],	# (.) - free slot
+					 ['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
 					 ['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
 					 ['#','.','#','.','#','.','#','.'],
 					 ['.','#','.','#','.','#','.','#']]
@@ -72,18 +72,18 @@ class Checkers(object):
 					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
 					 #['R','#','.','#','b','#','b','#'],	# (.) - free slot
 					 #['#','.','#','.','#','r','#','r'],	# (R) - red checker piece
-					 #['.','#','.','#','.','#','.','#'],	# (B) - black checker piece
+					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
 					 #['#','.','#','.','#','.','#','.'],
 					 #['.','#','.','#','.','#','.','#']]
 		
 		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 #['.','#','.','#','.','#','.','#'],	# (b) - black piece
+					 #['.','#','.','#','.','#','R','#'],	# (b) - black piece
 					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 #['.','#','.','#','.','#','.','#'],	# (.) - free slot
-					 #['#','b','#','.','#','b','#','r'],	# (R) - red checker piece
-					 #['.','#','.','#','.','#','.','#'],	# (B) - black checker piece
-					 #['#','.','#','b','#','b','#','.'],
-					 #['.','#','.','#','r','#','.','#']]
+					 #['.','#','.','#','b','#','.','#'],	# (.) - free slot
+					 #['#','.','#','.','#','.','#','r'],	# (R) - red checker piece
+					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
+					 #['#','.','#','.','#','.','#','.'],
+					 #['.','#','.','#','.','#','.','#']]
 		
 		self.RED_TURN = True
 		
@@ -110,6 +110,10 @@ class Checkers(object):
 					p = RedPiece((row,col))											# remover esta parte após conclusão
 					p.promote()
 					self.red_pieces.append(p)
+				if BOARD_MAP[row][col] == 'x':
+					p = BlackPiece((row,col))
+					self.black_pieces.append(p)
+					CAPTURE_LIST.append(p)
 				if BOARD_MAP[row][col] == 'B':
 					p = BlackPiece((row,col))
 					p.promote()
@@ -498,6 +502,8 @@ class Piece(object):
 			while(self.is_move(new_row,new_col)):
 				if board[new_row][new_col] in self.FRIEND:
 					break
+				elif board[new_row][new_col] == 'x':
+					break
 				elif board[new_row][new_col] in self.OPPONENT:
 					if not eat:
 						r = self.front_row(new_row)
@@ -506,8 +512,8 @@ class Piece(object):
 							captures = True
 							eat = (new_row,new_col)
 							m = [[],[]]
-						else:
-							break
+						else: break
+					else: break
 				elif board[new_row][new_col] == '.':
 					m[0].append((new_row,new_col))
 					if eat:
@@ -535,6 +541,8 @@ class Piece(object):
 			while(self.is_move(new_row,new_col)):
 				if board[new_row][new_col] in self.FRIEND:
 					break
+				elif board[new_row][new_col] == 'x':
+					break
 				elif board[new_row][new_col] in self.OPPONENT:
 					if not eat:
 						r = self.front_row(new_row)
@@ -543,8 +551,8 @@ class Piece(object):
 							captures = True
 							eat = (new_row,new_col)
 							m = [[],[]]
-						else:
-							break
+						else: break
+					else: break
 				elif board[new_row][new_col] == '.':
 					m[0].append((new_row,new_col))
 					if eat:
@@ -572,6 +580,8 @@ class Piece(object):
 			while(self.is_move(new_row,new_col)):
 				if board[new_row][new_col] in self.FRIEND:
 					break
+				elif board[new_row][new_col] == 'x':
+					break
 				elif board[new_row][new_col] in self.OPPONENT:
 					if not eat:
 						r = self.back_row(new_row)
@@ -580,8 +590,8 @@ class Piece(object):
 							captures = True
 							eat = (new_row,new_col)
 							m = [[],[]]
-						else:
-							break
+						else: break
+					else: break
 				elif board[new_row][new_col] == '.':
 					m[0].append((new_row,new_col))
 					if eat:
@@ -610,6 +620,8 @@ class Piece(object):
 			while(self.is_move(new_row,new_col)):
 				if board[new_row][new_col] in self.FRIEND:
 					break
+				elif board[new_row][new_col] == 'x':
+					break
 				elif board[new_row][new_col] in self.OPPONENT:
 					if not eat:
 						r = self.back_row(new_row)
@@ -618,8 +630,8 @@ class Piece(object):
 							captures = True
 							eat = (new_row,new_col)
 							m = [[],[]]
-						else:
-							break
+						else: break
+					else: break
 				elif board[new_row][new_col] == '.':
 					m[0].append((new_row,new_col))
 					if eat:
