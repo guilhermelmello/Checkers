@@ -1,10 +1,8 @@
 #-*- coding: utf-8 -*-
 
 """
-ONDE PAREI:
-	- 1: ANALISAR E CONSERTAR O MÉTODO move_piece()
-		Obs.: implementar o modo de captura
-			- ao final de todas as capturas remover as peças e deselecionar a peça
+PRÓXIMO PASSO:
+	- Determinar quando uma partida está encerrada e qual foi o vencedor
 """
 
 import sys, pygame, copy
@@ -49,23 +47,23 @@ class Checkers(object):
 		CAPTURE_LIST = []
 		
 		
-		#BOARD_MAP = [['#','b','#','b','#','b','#','b'],		# (r) - red piece
-					 #['b','#','b','#','b','#','b','#'],		# (b) - black piece
-					 #['#','b','#','b','#','b','#','b'],		# (#) - unplayable slot
-					 #['.','#','.','#','.','#','.','#'],		# (.) - free slot
-					 #['#','.','#','.','#','.','#','.'],		# (R) - red checker piece
-					 #['r','#','r','#','r','#','r','#'],		# (B) - black checker piece
-					 #['#','r','#','r','#','r','#','r'],
-					 #['r','#','r','#','r','#','r','#']]
+		BOARD_MAP = [['#','b','#','b','#','b','#','b'],		# (r) - red piece
+					 ['b','#','b','#','b','#','b','#'],		# (b) - black piece
+					 ['#','b','#','b','#','b','#','b'],		# (#) - unplayable slot
+					 ['.','#','.','#','.','#','.','#'],		# (.) - free slot
+					 ['#','.','#','.','#','.','#','.'],		# (R) - red checker piece
+					 ['r','#','r','#','r','#','r','#'],		# (B) - black checker piece
+					 ['#','r','#','r','#','r','#','r'],
+					 ['r','#','r','#','r','#','r','#']]
 		
-		BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 ['B','#','b','#','.','#','.','#'],	# (b) - black piece
-					 ['#','.','#','.','#','r','#','.'],	# (#) - unplayable slot
-					 ['.','#','b','#','b','#','b','#'],	# (.) - free slot
-					 ['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
-					 ['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
-					 ['#','.','#','.','#','.','#','.'],
-					 ['.','#','.','#','.','#','.','#']]
+		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
+					 #['B','#','b','#','.','#','.','#'],	# (b) - black piece
+					 #['#','.','#','.','#','r','#','.'],	# (#) - unplayable slot
+					 #['.','#','b','#','b','#','b','#'],	# (.) - free slot
+					 #['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
+					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
+					 #['#','.','#','.','#','.','#','.'],
+					 #['.','#','.','#','.','#','.','#']]
 		
 		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
 					 #['B','#','.','#','b','#','.','#'],	# (b) - black piece
@@ -219,6 +217,11 @@ class Checkers(object):
 							#CAPTURE_MODE = False
 							#return
 						break
+					i += 1
+				
+				if i >= len(move[1]):
+					print "Jogada Inválida"
+					return
 				
 				if CAPTURE_MODE:
 					#has_moves = self.generate_moves([self.selected_piece])
@@ -746,4 +749,8 @@ if __name__ == "__main__":
 		
 		checkers.update(screen)
 		checkers.events()
+	
+	
+	
+	
 	
