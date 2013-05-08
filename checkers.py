@@ -16,7 +16,7 @@ global RED_DEFAULT,     RED_DEFAULT_SELECTED
 global RED_CHECKER,     RED_CHECKER_SELECTED
 global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
 global BLACK_CHECKER, BLACK_CHECKER_SELECTED
-global CAPTURE_MODE, CAPTURE_LIST
+global CAPTURE_MODE, CAPTURE_LIST, CAPTURE_COUNT
 
 
 def printBoardMap():
@@ -31,7 +31,7 @@ class Checkers(object):
 		global RED_CHECKER,     RED_CHECKER_SELECTED
 		global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
 		global BLACK_CHECKER, BLACK_CHECKER_SELECTED
-		global CAPTURE_MODE, CAPTURE_LIST
+		global CAPTURE_MODE, CAPTURE_LIST, CAPTURE_COUNT
 		
 		RED_DEFAULT				= pygame.image.load("images/red_default.png"           ).convert_alpha()
 		RED_DEFAULT_SELECTED	= pygame.image.load("images/red_default_selected.png"  ).convert_alpha()
@@ -43,27 +43,28 @@ class Checkers(object):
 		BLACK_CHECKER			= pygame.image.load("images/black_checker.png"         ).convert_alpha()
 		BLACK_CHECKER_SELECTED	= pygame.image.load("images/black_checker_selected.png").convert_alpha()
 		
-		CAPTURE_MODE = False
-		CAPTURE_LIST = []
+		CAPTURE_MODE  = False
+		CAPTURE_LIST  = []
+		CAPTURE_COUNT = 0
 		
 		
-		BOARD_MAP = [['#','b','#','b','#','b','#','b'],		# (r) - red piece
-					 ['b','#','b','#','b','#','b','#'],		# (b) - black piece
-					 ['#','b','#','b','#','b','#','b'],		# (#) - unplayable slot
-					 ['.','#','.','#','.','#','.','#'],		# (.) - free slot
-					 ['#','.','#','.','#','.','#','.'],		# (R) - red checker piece
-					 ['r','#','r','#','r','#','r','#'],		# (B) - black checker piece
-					 ['#','r','#','r','#','r','#','r'],
-					 ['r','#','r','#','r','#','r','#']]
+		#BOARD_MAP = [['#','b','#','b','#','b','#','b'],		# (r) - red piece
+					 #['b','#','b','#','b','#','b','#'],		# (b) - black piece
+					 #['#','b','#','b','#','b','#','b'],		# (#) - unplayable slot
+					 #['.','#','.','#','.','#','.','#'],		# (.) - free slot
+					 #['#','.','#','.','#','.','#','.'],		# (R) - red checker piece
+					 #['r','#','r','#','r','#','r','#'],		# (B) - black checker piece
+					 #['#','r','#','r','#','r','#','r'],
+					 #['r','#','r','#','r','#','r','#']]
 		
-		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 #['B','#','b','#','.','#','.','#'],	# (b) - black piece
-					 #['#','.','#','.','#','r','#','.'],	# (#) - unplayable slot
-					 #['.','#','b','#','b','#','b','#'],	# (.) - free slot
-					 #['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
-					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
-					 #['#','.','#','.','#','.','#','.'],
-					 #['.','#','.','#','.','#','.','#']]
+		BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
+					 ['B','#','.','#','.','#','.','#'],	# (b) - black piece
+					 ['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
+					 ['.','#','.','#','.','#','.','#'],	# (.) - free slot
+					 ['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
+					 ['.','#','B','#','.','#','.','#'],	# (B) - black checker piece
+					 ['#','.','#','.','#','.','#','.'],
+					 ['R','#','.','#','r','#','.','#']]
 		
 		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
 					 #['B','#','.','#','b','#','.','#'],	# (b) - black piece
@@ -139,11 +140,6 @@ class Checkers(object):
 		moves = self.generate_moves(pieces)
 		piece = None
 		
-		#print "Moves"
-		#for m in moves:
-			#print m
-		#print "====="
-		
 		for p in pieces:
 			if p.rect.collidepoint(pygame.mouse.get_pos()):
 				piece = p
@@ -157,14 +153,10 @@ class Checkers(object):
 			if not self.selected_piece:
 				print "Peca Invalida"
 		else: print "Selecione uma Peca"
-		
-		
-		#print "+++++++++++++++++++"
-				
 	
 	
 	def move_piece(self,pieces):
-		global CAPTURE_MODE, CAPTURE_LIST
+		global CAPTURE_MODE, CAPTURE_LIST, CAPTURE_COUNT
 		x_m,y_m = pygame.mouse.get_pos()
 		row = y_m/self.TILE_Y
 		col = x_m/self.TILE_X
@@ -175,60 +167,40 @@ class Checkers(object):
 			self.selected_piece = None
 		else:
 			# senão irá tentar mover a peça para a nova posição
-			print "===========> Move Piece"
-			
 			if CAPTURE_MODE:
 				moves = self.generate_moves([self.selected_piece])
 			else:
 				moves = self.generate_moves(pieces)
-			
-			print "Movimentos"
-			for m in moves:
-				print m[0].position,m[1],m[2]
 			
 			move = []
 			for m in moves:
 				if m[0].position == self.selected_piece.position:
 					move = m
 					break
+			
 			if move:
-				print "-------> mover",self.selected_piece.position
-				print move[0].position,move[1],move[2]
-				
 				x_p, y_p = self.selected_piece.position
 				for i in range(len(move[1])):				# para cada movimento possivel
-					print move[1][i]
 					if (row,col) == move[1][i]:
-						print "Jogada Válida"
 						BOARD_MAP[x_p][y_p] = '.'
 						BOARD_MAP[row][col] = self.selected_piece.group
 						self.selected_piece.position = (row,col)
 						if len(move[2]) > 0:				# a jogada posssui capturas
 							CAPTURE_MODE = True
-							print "--add Remover",move[2][i][0],move[2][i][1]
 							BOARD_MAP[move[2][i][0]][move[2][i][1]] = 'x'
 							CAPTURE_LIST.append(move[2][i])	# remover a peça capturada
-							print "---->>>>",CAPTURE_LIST
-							printBoardMap()
-						#else:								
-							#self.selected_piece.set_image_default()
-							#self.selected_piece = None
-							#self.RED_TURN = not self.RED_TURN
-							#CAPTURE_MODE = False
-							#return
+							CAPTURE_COUNT = 0
+						else:
+							CAPTURE_COUNT += 1
 						break
 					i += 1
 				
 				if i >= len(move[1]):
-					print "Jogada Inválida"
 					return
 				
 				if CAPTURE_MODE:
-					#has_moves = self.generate_moves([self.selected_piece])
 					has_moves = self.selected_piece.get_moves(BOARD_MAP)
-					print "has moves",has_moves
 					if len(has_moves[1]) == 0:
-						print "MOVIMENTO COM CAPTURA"
 						CAPTURE_MODE = False
 						for i in CAPTURE_LIST:
 							self.remove_piece(i)
@@ -243,22 +215,16 @@ class Checkers(object):
 					if self.selected_piece.position[0] == self.selected_piece.MAX_ROW:
 						self.selected_piece.promote()
 					for i in CAPTURE_LIST:
-						print "MOVIMENTO SIMPLES"
 						self.remove_piece(i.position)
 					CAPTURE_LIST = []
 					self.selected_piece.set_image_default()
 					self.selected_piece = None
 					self.RED_TURN = not self.RED_TURN
-				
-				print "<------- mover"
-				#print "p.position = ",self.selected_piece.position
-				
-				
-				
+			
+				print "COUNT", CAPTURE_COUNT
+			
 			else:
 				print "Jogada Inválida",self.selected_piece.position
-			
-			print "<=========== Move Piece"
 	
 	
 	
@@ -270,7 +236,6 @@ class Checkers(object):
 			if p.position == pos:
 				pieces.remove(p)
 				BOARD_MAP[pos[0]][pos[1]] = '.'
-				print "Peça removida",pos
 				break
 		
 	
@@ -292,8 +257,6 @@ class Checkers(object):
 			jogadas) que tem maior número de capturas.
 		"""
 		moves = piece.get_moves(board)
-		#print "cp:",moves
-		
 		
 		if len(moves[1]) == 0:		# se não tiver capturas seguintes
 			return 0,None,None		# retornar 0 para o número de capturas e None para a movimentação seguinte e a captura realizada
@@ -302,7 +265,6 @@ class Checkers(object):
 		next_move = []
 		capt_move = []
 		for i in range(len(moves[0])): 		# para cada movimento da peça - verificar o número de capturas realizadas
-			#print "movimento:",moves[0][i]
 			px,py = piece.position
 			board[px][py] = '.'
 			b = copy.deepcopy(board)
@@ -317,11 +279,9 @@ class Checkers(object):
 				count = c
 				next_move = [moves[0][i]]
 				capt_move = [moves[1][i]]
-				#print "Iniciado com",moves[0][i],moves[1][i]
 			elif c == count:
 				next_move.append(moves[0][i])
 				capt_move.append(moves[1][i])
-				#print "Inserido",moves[0][i],moves[1][i]
 		
 		return count, next_move, capt_move
 		
@@ -332,17 +292,10 @@ class Checkers(object):
 			método  responsável por analisar  e  retornar
 			as jogadas possíveis de um conjunto de peças.
 		"""
-		"""
-			OBS.: para jogadas com captura -> verificar o
-			número capturas para cada jogada, e armazenar
-			a jogada com maior número de capturas.
-			- Iniciar CAPTURE_MODE
-		"""
 		moves = []
 		captures = False
 		for p in pieces:
 			m = p.get_moves(BOARD_MAP)
-			#print "==>>",p.position,m
 			if len(m[0]) > 0: 		# SE TIVER JOGADAS
 				if len(m[1]) > 0 and not captures: 	# se tiver capturas mas nenhuma captura adicionada
 					moves = []						# limpar jogadas
@@ -352,38 +305,69 @@ class Checkers(object):
 						moves.append([p, m[0],m[1]])
 				else: moves.append([p, m[0],m[1]])		# se não tiver capturas, adicionar jogada
 		
-		#print "-> Moves:"
-		#for kk in moves:
-			#print kk[0].position,kk[1],kk[2]
-		
-		# até aqui moves representa as jogadas possíveis
-		# caso existam jogadas com capturas, verificar
-		# qual tem o maior número de capturas
-		
 		if captures:
 			mc = [[None,[],[]]] # move/capture = [Piece,[(moves)],[(captures)]
 			capt_num = 0
 			
-			
 			for m in moves: # para cada peça com movimentos de captura
-				#print "m:",m
 				piece = m[0]
 				
-				#print "analise: ",m[0].position
 				c,mov,cap = self.capture_pieces(copy.deepcopy(BOARD_MAP), copy.copy(piece))
-				#print mov,c,cap
 				
 				if c > capt_num:
 					capt_num = c
 					mc = []
 				if c == capt_num:
 					mc.append([piece,mov,cap])
-				
-			#print "mc",mc
 			
 			return mc
 		else:
 			return moves
+	
+	
+	def end_of_game(self):
+		if self.RED_TURN:
+			pieces = self.red_pieces
+		else:
+			pieces = self.black_pieces
+		
+		if len(self.generate_moves(pieces)) == 0:
+			if self.RED_TURN:
+				print "FIM DE JOGO, Pretas Venceram"
+			else:
+				print "FIM DE JOGO, Vermelhas Venceram"
+			return True
+		
+		if CAPTURE_COUNT >= 40:	# 20 jogadas de cada jogador
+			print "FIM DE JOGO, EMPATE"
+			return True
+		
+		R,r = 0,0
+		B,b = 0,0
+		
+		if CAPTURE_COUNT >= 5:		# 5 jogadas de cada jogador
+			for ps in [self.red_pieces,self.black_pieces]:
+				for p in ps:
+					if p.group == 'r':
+						r += 1
+					elif p.group == 'R':
+						R += 1
+					elif p.group == 'b':
+						b += 1
+					elif p.group == 'B':
+						B += 1
+		
+			for p,o in [[R,r],[B,b]],[[B,b],[R,r]]:
+				if p[0] <= 2 and p[1] == 0:	# 2 ou 1 dama
+					if o[0] <= 2 and o[1] == 0:
+						print "FIM DE JOGO, Empate"
+						return True
+					if o[0] == 1 and o[1] <= 1:	# x 1 dama e 1 ou 0 peça
+						print "FIM DE JOGO, Empate"
+						return True
+				
+		
+		return False
 
 
 class Piece(object):
@@ -743,13 +727,14 @@ if __name__ == "__main__":
 	done = False
 	while not done:
 		
-		pygame.display.flip()
 		screen.fill((0,0,0))
 		screen.blit(checkers.board_image,(0,0))
 		
 		checkers.update(screen)
 		checkers.events()
+		done = checkers.end_of_game()
 	
+		pygame.display.flip()
 	
 	
 	
