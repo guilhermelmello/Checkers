@@ -1,12 +1,6 @@
 #-*- coding: utf-8 -*-
 
-"""
-PRÓXIMO PASSO:
-	- Determinar quando uma partida está encerrada e qual foi o vencedor
-"""
-
-import sys, pygame, copy
-import os
+import sys, pygame, copy, os
 from abc import *
 from math import *
 from pygame.locals import *
@@ -20,12 +14,12 @@ global CAPTURE_MODE, CAPTURE_LIST, CAPTURE_COUNT
 
 
 def printBoardMap():
-		for i in BOARD_MAP:
-			print i
+	for i in BOARD_MAP:
+		print i
 
 
 class Checkers(object):
-	def __init__(self,file_name = "images/board1.png"):
+	def __init__(self,screen, file_name = "images/board1.png"):
 		global BOARD_MAP
 		global RED_DEFAULT,     RED_DEFAULT_SELECTED
 		global RED_CHECKER,     RED_CHECKER_SELECTED
@@ -48,23 +42,23 @@ class Checkers(object):
 		CAPTURE_COUNT = 0
 		
 		
-		#BOARD_MAP = [['#','b','#','b','#','b','#','b'],		# (r) - red piece
-					 #['b','#','b','#','b','#','b','#'],		# (b) - black piece
-					 #['#','b','#','b','#','b','#','b'],		# (#) - unplayable slot
-					 #['.','#','.','#','.','#','.','#'],		# (.) - free slot
-					 #['#','.','#','.','#','.','#','.'],		# (R) - red checker piece
-					 #['r','#','r','#','r','#','r','#'],		# (B) - black checker piece
-					 #['#','r','#','r','#','r','#','r'],
-					 #['r','#','r','#','r','#','r','#']]
+		BOARD_MAP = [['#','b','#','b','#','b','#','b'],		# (r) - red piece
+					 ['b','#','b','#','b','#','b','#'],		# (b) - black piece
+					 ['#','b','#','b','#','b','#','b'],		# (#) - unplayable slot
+					 ['.','#','.','#','.','#','.','#'],		# (.) - free slot
+					 ['#','.','#','.','#','.','#','.'],		# (R) - red checker piece
+					 ['r','#','r','#','r','#','r','#'],		# (B) - black checker piece
+					 ['#','r','#','r','#','r','#','r'],
+					 ['r','#','r','#','r','#','r','#']]
 		
-		BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 ['B','#','.','#','.','#','.','#'],	# (b) - black piece
-					 ['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 ['.','#','.','#','.','#','.','#'],	# (.) - free slot
-					 ['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
-					 ['.','#','B','#','.','#','.','#'],	# (B) - black checker piece
-					 ['#','.','#','.','#','.','#','.'],
-					 ['R','#','.','#','r','#','.','#']]
+		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
+					 #['B','#','.','#','.','#','.','#'],	# (b) - black piece
+					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
+					 #['.','#','.','#','.','#','.','#'],	# (.) - free slot
+					 #['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
+					 #['.','#','B','#','.','#','.','#'],	# (B) - black checker piece
+					 #['#','.','#','.','#','.','#','.'],
+					 #['R','#','.','#','r','#','.','#']]
 		
 		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
 					 #['B','#','.','#','b','#','.','#'],	# (b) - black piece
@@ -83,6 +77,8 @@ class Checkers(object):
 					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
 					 #['#','.','#','.','#','.','#','.'],
 					 #['.','#','.','#','.','#','.','#']]
+		
+		self.screen = screen
 		
 		self.RED_TURN = True
 		
@@ -117,6 +113,34 @@ class Checkers(object):
 					p = BlackPiece((row,col))
 					p.promote()
 					self.black_pieces.append(p)										# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	
+	
+	def start_checkers(self):
+		
+		self.screen = pygame.display.set_mode(self.board_image.get_size(),RESIZABLE,32)
+		
+		#mm = Minimax(1)
+		
+		done = False
+		while not done:
+			
+			self.screen.fill((0,0,0))
+			self.screen.blit(self.board_image,(0,0))
+			
+			#if self.RED_TURN:
+				#print "Escolha uma jogada"
+			#else:
+				#print "START MINIMAX"
+				#p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces)
+				#print "preto jogou",p.position, "para",m
+				#self.play(p,m)
+				#self.RED_TURN = True
+			
+			self.events()
+			self.update(self.screen)
+			done = self.end_of_game()
+		
+			pygame.display.flip()
 	
 	
 	def events(self):
@@ -227,7 +251,6 @@ class Checkers(object):
 				print "Jogada Inválida",self.selected_piece.position
 	
 	
-	
 	def remove_piece(self, pos):
 		if self.RED_TURN:
 			pieces = self.black_pieces
@@ -237,7 +260,7 @@ class Checkers(object):
 				pieces.remove(p)
 				BOARD_MAP[pos[0]][pos[1]] = '.'
 				break
-		
+	
 	
 	def update(self,screen):
 		for piece in self.red_pieces:
@@ -282,9 +305,7 @@ class Checkers(object):
 			elif c == count:
 				next_move.append(moves[0][i])
 				capt_move.append(moves[1][i])
-		
 		return count, next_move, capt_move
-		
 	
 	
 	def generate_moves(self,pieces):
@@ -365,9 +386,19 @@ class Checkers(object):
 					if o[0] == 1 and o[1] <= 1:	# x 1 dama e 1 ou 0 peça
 						print "FIM DE JOGO, Empate"
 						return True
-				
+		
 		
 		return False
+	
+	
+	def play(self, piece, move):
+		global BOARD_MAP
+		
+		r,c = piece.position
+		BOARD_MAP[r][c] = '.'
+		piece.position = move
+		r,c = piece.position
+		BOARD_MAP[r][c] = piece.group
 
 
 class Piece(object):
@@ -387,12 +418,6 @@ class Piece(object):
 		""" Define the image for a selected piece """
 		self.surface = self.selected_image
 	
-	def is_next_move(self,row,col):
-		moves,captures = self.generate_moves()
-		for i in range(len(moves)):
-			if (row,col) == moves[i]:
-				return i
-		return -1
 	
 	@abstractmethod
 	def front_row(self,row):
@@ -643,7 +668,6 @@ class Piece(object):
 		return moves
 
 
-
 class RedPiece(Piece):
 	global RED_DEFAULT, RED_DEFAULT_SELECTED
 	global RED_CHECKER, RED_CHECKER_SELECTED
@@ -677,7 +701,7 @@ class RedPiece(Piece):
 	
 	def right_col(self,col):
 		return col + 1
-	
+
 
 class BlackPiece(Piece):
 	global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
@@ -714,28 +738,8 @@ class BlackPiece(Piece):
 		return col - 1
 
 
-if __name__ == "__main__":
-	pygame.init()
-	pygame.display.set_caption("Checkers")
-	
-	os.environ['SDL_VIDEO_WINDOW_POS'] = '500,100'
-	screen = pygame.display.set_mode((0,0))
-	
-	checkers = Checkers()
-	screen = pygame.display.set_mode(checkers.board_image.get_size(),RESIZABLE,32)
-	
-	done = False
-	while not done:
-		
-		screen.fill((0,0,0))
-		screen.blit(checkers.board_image,(0,0))
-		
-		checkers.update(screen)
-		checkers.events()
-		done = checkers.end_of_game()
-	
-		pygame.display.flip()
+
 	
 	
 	
-	
+	 
