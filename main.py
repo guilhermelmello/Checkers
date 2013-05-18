@@ -23,20 +23,10 @@ def main():
 	
 	f = pygame.font.Font("FEASFBRG.TTF",32)
 	
-	#buttons = [Button("Exemplo_1",1),
-			   ##Button("Exemplo_1",3),
-		       #Button("Exemplo_2",2)]
-	#buttons[0].set_position(50,50)
-	#buttons[1].set_position(50,100)
-	##buttons[2].set_position(50,100)
-	
 	state = 0
 	while True:
 		screen.blit(menu.menu_background,(0,0))
 		menu.update()
-		
-		#for button in buttons:
-			#button.draw(screen,f)
 		
 		e = pygame.event.wait()
 		
@@ -48,14 +38,27 @@ def main():
 					state = menu.mouse_clicked()
 				if state == 1:
 					print "Start Game!"
-					checkers = Checkers(screen)
-					checkers.start_checkers()
+					menu.set_menu(1)
 					state = 0
 				elif state == 2:
 					print "Menu Options!"
+					menu.set_menu(2)
 					state = 0
 				elif state == 3:
 					print "About"
+					menu.set_menu(3)
+					state = 0
+				elif state == 4:
+					print "1 player mode"
+					state = 0
+				elif state == 5:
+					print "2 Players Mode"
+					checkers = Checkers(screen)
+					checkers.start_checkers()
+					state = 0
+				elif state == 6:
+					print "Back"
+					menu.set_menu(0)
 					state = 0
 				elif state == 10:
 					print "Exit!"
