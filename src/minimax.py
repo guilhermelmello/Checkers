@@ -1,21 +1,23 @@
 #-*- coding: utf-8 -*-
 
+import copy
+
 class Minimax(object):
-	def __init__(self, depth):
+	def __init__(self, depth, game):
 		self.depth = depth
+		self.game = game
 	
 	
 	def start_minimax(self, board, player1, player2):
 		p,m,r =  self.minimax(0, board, player1, player2, self.max_function, self.min_function)
-		raw_input("Continuar?")
 		return p,m,r
 	
 	
 	def minimax(self,depth, board, player1, player2, max_function, min_function):
-		if depth >= self.depth or Checkers().end_of_game():
-			return None, None, self.static(max_function, player1)
+		if depth >= self.depth or self.game.end_of_game():
+			return None, None, self.static(player1,player2)
 		else:
-			moves = Checkers().generate_moves(player1)
+			moves = self.game.generate_moves(player1)
 			my_move = None
 			for p in moves:			# para cada peça com movimento
 				for m in p[1]:		# para cada movimento da peça
@@ -33,21 +35,27 @@ class Minimax(object):
 			return my_move
 	
 	def new_state(self,board,piece,move):
-		print "gerar um novo estado para",piece.position,move
+		#print "gerar um novo estado para",piece.position,move
 		r,c = piece.position
 		board[r][c] = '.'
 		board[move[0]][move[1]] = piece.group
-		for asd in board:
-			print asd
+		#for asd in board:
+			#print asd
 		return board
 	
 	
-	def static(self,function,player):
-		#moves = Checkers().generate_moves(player)
-		#for p in moves:
-			#print p
+	def static(self,player1,player2):
 		
-		return 1
+		moves1 = self.game.generate_moves(player1)
+		moves2 = self.game.generate_moves(player2)
+		p1,p2 = 0,0
+		
+		for m in moves1:
+			p1 += len(m[1])
+		for m in moves2:
+			p2 += len(m[1])
+		
+		return (p1/len(moves1)) - (p2/len(moves2))
 	
 	
 	def max_function():

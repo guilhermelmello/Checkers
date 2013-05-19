@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 
 import sys, pygame, copy, os
+from minimax import Minimax
 from abc import *
 from math import *
 from pygame.locals import *
@@ -115,11 +116,14 @@ class Checkers(object):
 					self.black_pieces.append(p)										# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	
 	
-	def start_checkers(self):
+	def start_checkers(self, minimax=None):
+		
+		self.__init__(self.screen)
 		
 		self.screen = pygame.display.set_mode(self.board_image.get_size(),RESIZABLE,32)
 		
-		#mm = Minimax(1)
+		if minimax:
+			mm = Minimax(1,self)
 		
 		done = False
 		while not done:
@@ -127,14 +131,13 @@ class Checkers(object):
 			self.screen.fill((0,0,0))
 			self.screen.blit(self.board_image,(0,0))
 			
-			#if self.RED_TURN:
-				#print "Escolha uma jogada"
-			#else:
-				#print "START MINIMAX"
-				#p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces)
-				#print "preto jogou",p.position, "para",m
-				#self.play(p,m)
-				#self.RED_TURN = True
+			if minimax:
+				if not self.RED_TURN:
+					print "START MINIMAX"
+					p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces)
+					print "preto jogou",p.position, "para",m
+					self.play(p,m)
+					self.RED_TURN = True
 			
 			self.events()
 			self.update(self.screen)

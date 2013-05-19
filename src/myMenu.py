@@ -10,7 +10,7 @@ BLUE  = (  0,  0,255)
 WHITE = (255,255,255)
 
 class Menu():
-	def __init__(self, screen, font_file = "FEASFBRG.TTF", bg_file = "images/menu.png"):
+	def __init__(self, screen, font_file = "data/FEASFBRG.TTF", bg_file = "images/menu.png"):
 		self.menu_background = pygame.image.load(bg_file)
 		self.menu_font       = pygame.font.Font(font_file,32)
 		self.menu_screen     = screen
@@ -45,22 +45,25 @@ class Menu():
 	def set_menu(self,menu_id):
 		self.menu_itens = []
 		if menu_id == 1:	# Start Menu
-			my_buttons = [('1 Player Mode',   4),
-			              ('2 Players Mode ', 5),
+			my_buttons = [('1 Player Mode',  11),
+			              ('2 Players Mode ',12),
 			              ('Back',            6)]
 		elif menu_id == 2:	# Options Menu
-			my_buttons = [('Back',            6)]
+			my_buttons = [('Hard',           21),
+			              ('Medium',         22),
+			              ('Easy',           23),
+			              ('Back',            6)]
 		elif menu_id == 3:	# About Menu
 			my_buttons = [('Back',            6)]
 		else:				# Main Menu
 			my_buttons = [('Start',   1),
 			              ('Options', 2),
 			              ('About',   3),
-			              ('Exit',   10)]
+			              ('Exit',  100)]
 		
 		self.create_buttons(my_buttons)
 	
-	
+	# Change the color buttons when the mouse is on
 	def mouse_motion(self):
 		m_pos = pygame.mouse.get_pos()
 		for b in self.menu_itens:
@@ -68,6 +71,7 @@ class Menu():
 				b.set_selected()
 			else: b.set_unselected()
 	
+	# Return the state of the selected button
 	def mouse_clicked(self):
 		m_pos = pygame.mouse.get_pos()
 		for b in self.menu_itens:

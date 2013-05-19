@@ -1,9 +1,9 @@
 #-*- coding: utf-8 -*-
 
-from checkers import Checkers
-from minimax  import Minimax
+from src.checkers import Checkers
+from src.minimax  import Minimax
 from pygame.locals import *
-import myMenu
+import src.myMenu as myMenu
 import copy
 import pygame
 import os, sys
@@ -21,9 +21,12 @@ def main():
 	
 	screen = pygame.display.set_mode(menu.menu_background.get_size(),0,32)
 	
-	f = pygame.font.Font("FEASFBRG.TTF",32)
+	checkers = Checkers(screen)
+	
+	f = pygame.font.Font("data/FEASFBRG.TTF",32)
 	
 	state = 0
+	level = 1
 	while True:
 		screen.blit(menu.menu_background,(0,0))
 		menu.update()
@@ -33,34 +36,52 @@ def main():
 		if e.type == MOUSEMOTION:
 			menu.mouse_motion()
 		elif e.type == MOUSEBUTTONDOWN:
-			if e.button == 1 :		# botão esquerdo
-				if state == 0:
-					state = menu.mouse_clicked()
-				if state == 1:
+			if e.button == 1 :                           # left button
+				if state == 0:                           # current state
+					state = menu.mouse_clicked()         # recieve the new state
+				
+				if state == 1:                           # start game menu
 					print "Start Game!"
-					menu.set_menu(1)
+					menu.set_menu(1)                     # set the menu whith start game options
 					state = 0
-				elif state == 2:
+				elif state == 11:
+					print "1 player mode"
+					checkers.start_checkers(minimax=level)
+					menu.set_menu(0)
+					state = 0
+				elif state == 12:
+					print "2 Players Mode"
+					checkers.start_checkers()
+					menu.set_menu(0)
+					state = 0
+				elif state == 2:                         # options menu
 					print "Menu Options!"
-					menu.set_menu(2)
+					menu.set_menu(2)                     # set the menu whith options for options menu
 					state = 0
-				elif state == 3:
+				elif state == 21:
+					print "Hard"
+					level = 3
+					menu.set_menu(0)
+					state = 0
+				elif state == 22:
+					print "Medium"
+					level = 2
+					menu.set_menu(0)
+					state = 0
+				elif state == 23:
+					print "Easy"
+					level = 1
+					menu.set_menu(0)
+					state = 0
+				elif state == 3:                         # about menu
 					print "About"
 					menu.set_menu(3)
-					state = 0
-				elif state == 4:
-					print "1 player mode"
-					state = 0
-				elif state == 5:
-					print "2 Players Mode"
-					checkers = Checkers(screen)
-					checkers.start_checkers()
 					state = 0
 				elif state == 6:
 					print "Back"
 					menu.set_menu(0)
 					state = 0
-				elif state == 10:
+				elif state == 100:
 					print "Exit!"
 					pygame.quit()
 					sys.exit()
