@@ -52,14 +52,14 @@ class Checkers(object):
 					 ['#','r','#','r','#','r','#','r'],
 					 ['r','#','r','#','r','#','r','#']]
 		
-		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 #['B','#','.','#','.','#','.','#'],	# (b) - black piece
-					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 #['.','#','.','#','.','#','.','#'],	# (.) - free slot
-					 #['#','.','#','.','#','.','#','.'],	# (R) - red checker piece
-					 #['.','#','B','#','.','#','.','#'],	# (B) - black checker piece
-					 #['#','.','#','.','#','.','#','.'],
-					 #['R','#','.','#','r','#','.','#']]
+		BOARD_MAP = [['#','.','#','.','#','.','#','.'],
+					 ['.','#','.','#','b','#','r','#'],
+					 ['#','.','#','.','#','.','#','.'],
+					 ['.','#','.','#','.','#','r','#'],
+					 ['#','r','#','.','#','.','#','b'],
+					 ['.','#','.','#','.','#','.','#'],
+					 ['#','r','#','.','#','.','#','.'],
+					 ['.','#','.','#','.','#','.','#']]
 		
 		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
 					 #['B','#','.','#','b','#','.','#'],	# (b) - black piece
@@ -115,7 +115,7 @@ class Checkers(object):
 					p.promote()
 					self.black_pieces.append(p)										# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	
-	
+	#
 	def start_checkers(self, minimax=None):
 		
 		self.__init__(self.screen)
@@ -123,7 +123,7 @@ class Checkers(object):
 		self.screen = pygame.display.set_mode(self.board_image.get_size(),RESIZABLE,32)
 		
 		if minimax:
-			mm = Minimax(1,self)
+			mm = Minimax(minimax,self)
 		
 		done = False
 		while not done:
@@ -134,18 +134,21 @@ class Checkers(object):
 			if minimax:
 				if not self.RED_TURN:
 					print "START MINIMAX"
-					p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces)
+					p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces) # peça, movimento, valor, capturas
 					print "preto jogou",p.position, "para",m
-					self.play(p,m)
-					self.RED_TURN = True
+					
+					if not self.play(p,m):
+						self.RED_TURN = True
+						raw_input("vez das pecas vermelhas")
+					else: raw_input("preta ainda joga")
 			
 			self.events()
 			self.update(self.screen)
-			done = self.end_of_game()
+			done = self.end_of_game(BOARD_MAP)
 		
 			pygame.display.flip()
 	
-	
+	#
 	def events(self):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -162,9 +165,9 @@ class Checkers(object):
 					else:
 						self.move_piece(pieces)
 
-
+	#
 	def select_piece(self,pieces):
-		moves = self.generate_moves(pieces)
+		moves = self.generate_moves(pieces,BOARD_MAP)
 		piece = None
 		
 		for p in pieces:
@@ -181,7 +184,7 @@ class Checkers(object):
 				print "Peca Invalida"
 		else: print "Selecione uma Peca"
 	
-	
+	#
 	def move_piece(self,pieces):
 		global CAPTURE_MODE, CAPTURE_LIST, CAPTURE_COUNT
 		x_m,y_m = pygame.mouse.get_pos()
@@ -195,9 +198,9 @@ class Checkers(object):
 		else:
 			# senão irá tentar mover a peça para a nova posição
 			if CAPTURE_MODE:
-				moves = self.generate_moves([self.selected_piece])
+				moves = self.generate_moves([self.selected_piece],BOARD_MAP)
 			else:
-				moves = self.generate_moves(pieces)
+				moves = self.generate_moves(pieces,BOARD_MAP)
 			
 			move = []
 			for m in moves:
@@ -253,7 +256,7 @@ class Checkers(object):
 			else:
 				print "Jogada Inválida",self.selected_piece.position
 	
-	
+	#
 	def remove_piece(self, pos):
 		if self.RED_TURN:
 			pieces = self.black_pieces
@@ -264,7 +267,7 @@ class Checkers(object):
 				BOARD_MAP[pos[0]][pos[1]] = '.'
 				break
 	
-	
+	#
 	def update(self,screen):
 		for piece in self.red_pieces:
 			x,y = piece.position
@@ -274,7 +277,7 @@ class Checkers(object):
 			x,y = piece.position
 			piece.rect = screen.blit(piece.surface,(y*self.TILE_Y,x*self.TILE_X))
 	
-	
+	#
 	def capture_pieces(self,board,piece):
 		"""
 			método invocado no modo de captura (CAPTURE_MODE)
@@ -310,8 +313,8 @@ class Checkers(object):
 				capt_move.append(moves[1][i])
 		return count, next_move, capt_move
 	
-	
-	def generate_moves(self,pieces):
+	#
+	def generate_moves(self,pieces,board):
 		"""
 			método  responsável por analisar  e  retornar
 			as jogadas possíveis de um conjunto de peças.
@@ -319,7 +322,7 @@ class Checkers(object):
 		moves = []
 		captures = False
 		for p in pieces:
-			m = p.get_moves(BOARD_MAP)
+			m = p.get_moves(board)
 			if len(m[0]) > 0: 		# SE TIVER JOGADAS
 				if len(m[1]) > 0 and not captures: 	# se tiver capturas mas nenhuma captura adicionada
 					moves = []						# limpar jogadas
@@ -336,7 +339,7 @@ class Checkers(object):
 			for m in moves: # para cada peça com movimentos de captura
 				piece = m[0]
 				
-				c,mov,cap = self.capture_pieces(copy.deepcopy(BOARD_MAP), copy.copy(piece))
+				c,mov,cap = self.capture_pieces(copy.deepcopy(board), copy.copy(piece))
 				
 				if c > capt_num:
 					capt_num = c
@@ -348,14 +351,14 @@ class Checkers(object):
 		else:
 			return moves
 	
-	
-	def end_of_game(self):
+	#
+	def end_of_game(self,board):
 		if self.RED_TURN:
 			pieces = self.red_pieces
 		else:
 			pieces = self.black_pieces
 		
-		if len(self.generate_moves(pieces)) == 0:
+		if len(self.generate_moves(pieces,board)) == 0:
 			if self.RED_TURN:
 				print "FIM DE JOGO, Pretas Venceram"
 			else:
@@ -393,56 +396,108 @@ class Checkers(object):
 		
 		return False
 	
-	
+	#
 	def play(self, piece, move):
 		global BOARD_MAP
-		
+		print "Movendo para",move
+		capt_again = False
+		moves = piece.get_moves(BOARD_MAP)
+		print moves
+		cap = None
+		if len(moves[1])>0:
+			for i in range(len(moves[0])):
+				if moves[0][i] == move:
+					cap = moves[1][i]
+			print "Com remoção da peça",cap
+			self.remove_piece(cap)
+			print piece.position,piece.get_moves(BOARD_MAP)
+			capt_again = True
+			
 		r,c = piece.position
 		BOARD_MAP[r][c] = '.'
 		piece.position = move
 		r,c = piece.position
 		BOARD_MAP[r][c] = piece.group
+		if piece.position[0] == piece.MAX_ROW:
+			piece.promote()
+		
+		if capt_again and len(piece.get_moves(BOARD_MAP)[1]) > 0:
+			return True
+		else:
+			return False
+	
+	#
+	def set_test(self,board):
+		"""
+			Método utilizado para testar o minimax durante a implementação
+			não será utilizado após termino da implementação
+			-> Define tabuleiro atual e as peças de cada jogador
+		"""
+		self.BOARD_MAP = copy.deepcopy(board)
+		self.red_pieces = []
+		self.black_pieces = []
+		self.RED_TURN = False
+		for lin,l in enumerate(board):
+			for col,casa in enumerate(l):
+				if casa == 'r':
+					p = RedPiece((lin,col))
+					self.red_pieces.append(p)
+				if casa == 'b':
+					p = BlackPiece((lin,col))
+					self.black_pieces.append(p)
+				if casa == 'R':
+					p = RedPiece((lin,col))
+					p.promote()
+					self.red_pieces.append(p)
+				if casa == 'B':
+					p = BlackPiece((lin,col))
+					p.promote()
+					self.black_pieces.append(p)
 
 
 class Piece(object):
-	global BOARD_MAP
-
 	def __init__(self,surface,pos,group):
 		self.surface = surface
 		self.position = pos
 		self.group = group
 		self.rect = None
 	
+	#
 	def set_image_default(self):
 		""" Define the image for a not selected piece """
 		self.surface = self.default_image
 	
+	#
 	def set_image_selected(self):
 		""" Define the image for a selected piece """
 		self.surface = self.selected_image
 	
-	
+	#
 	@abstractmethod
 	def front_row(self,row):
 		pass
 	
+	#
 	@abstractmethod
 	def back_row(self,row):
 		pass
 	
+	#
 	@abstractmethod
 	def left_col(self, col):
 		pass
-	
+	#
 	@abstractmethod
 	def right_col(self, col):
 		pass
 	
+	#
 	def is_move(self,row,col):
 		if ( row < 8 and row >= 0 and col < 8 and col >= 0 ):
 			return True
 		else: return False
 	
+	#
 	def get_moves(self,board):
 		moves = [[],[]]
 		captures = False
@@ -686,22 +741,22 @@ class RedPiece(Piece):
 		Piece.__init__(self,RED_DEFAULT,pos,'r')
 		self.default_image  = RED_DEFAULT
 		self.selected_image = RED_DEFAULT_SELECTED
-
+	#
 	def promote(self):
 		self.group = 'R'
 		self.surface =        RED_CHECKER
 		self.default_image  = RED_CHECKER
 		self.selected_image = RED_CHECKER_SELECTED
-	
+	#
 	def front_row(self,row):
 		return row - 1
-	
+	#
 	def back_row(self, row):
 		return row + 1
-	
+	#
 	def left_col(self,col):
 		return col - 1
-	
+	#
 	def right_col(self,col):
 		return col + 1
 
@@ -721,25 +776,26 @@ class BlackPiece(Piece):
 		Piece.__init__(self,BLACK_DEFAULT,pos,'b')
 		self.default_image  = BLACK_DEFAULT
 		self.selected_image = BLACK_DEFAULT_SELECTED
-
+	
+	#
 	def promote(self):
 		self.group = 'B'
 		self.surface =        BLACK_CHECKER
 		self.default_image  = BLACK_CHECKER
 		self.selected_image = BLACK_CHECKER_SELECTED
-	
+	#
 	def front_row(self,row):
 		return row + 1
-	
+	#
 	def back_row(self, row):
 		return row - 1
-	
+	#
 	def left_col(self,col):
 		return col + 1
-	
+	#
 	def right_col(self,col):
 		return col - 1
-
+	
 
 
 	

@@ -26,7 +26,7 @@ def main():
 	f = pygame.font.Font("data/FEASFBRG.TTF",32)
 	
 	state = 0
-	level = 1
+	level = 2
 	while True:
 		screen.blit(menu.menu_background,(0,0))
 		menu.update()
