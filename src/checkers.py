@@ -4,8 +4,10 @@ import sys, pygame, copy, os
 from minimax import Minimax
 from abc import *
 from math import *
+from myMenu import MenuItem, Text, Button
 from pygame.locals import *
 
+global DONE
 global BOARD_MAP
 global RED_DEFAULT,     RED_DEFAULT_SELECTED
 global RED_CHECKER,     RED_CHECKER_SELECTED
@@ -20,8 +22,8 @@ def printBoardMap():
 
 
 class Checkers(object):
-	def __init__(self,screen, file_name = "images/board1.png"):
-		global BOARD_MAP
+	def __init__(self,screen, file_name = "images/board11.png"):
+		global BOARD_MAP, DONE, GAME_TEXT
 		global RED_DEFAULT,     RED_DEFAULT_SELECTED
 		global RED_CHECKER,     RED_CHECKER_SELECTED
 		global BLACK_DEFAULT, BLACK_DEFAULT_SELECTED
@@ -52,14 +54,14 @@ class Checkers(object):
 					 ['#','r','#','r','#','r','#','r'],
 					 ['r','#','r','#','r','#','r','#']]
 		
-		BOARD_MAP = [['#','.','#','.','#','.','#','.'],
-					 ['.','#','.','#','b','#','r','#'],
-					 ['#','.','#','.','#','.','#','.'],
-					 ['.','#','.','#','.','#','r','#'],
-					 ['#','r','#','.','#','.','#','b'],
-					 ['.','#','.','#','.','#','.','#'],
-					 ['#','r','#','.','#','.','#','.'],
-					 ['.','#','.','#','.','#','.','#']]
+		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],
+					 #['b','#','r','#','.','#','b','#'],
+					 #['#','.','#','.','#','.','#','.'],
+					 #['.','#','.','#','.','#','.','#'],
+					 #['#','.','#','.','#','.','#','.'],
+					 #['.','#','.','#','.','#','.','#'],
+					 #['#','.','#','.','#','.','#','.'],
+					 #['.','#','.','#','.','#','.','#']]
 		
 		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
 					 #['B','#','.','#','b','#','.','#'],	# (b) - black piece
@@ -89,7 +91,7 @@ class Checkers(object):
 		self.selected_piece = None	# Set the selected piece
 		
 		self.TILE_X = self.board_image.get_size()[0]/8 		# number of pixels on x
-		self.TILE_Y = self.board_image.get_size()[1]/8 		# number of pixels on y
+		self.TILE_Y = self.board_image.get_size()[0]/8 		# number of pixels on y
 		
 		# Start the pieces on board
 		for row in range(len(BOARD_MAP)):
@@ -114,33 +116,88 @@ class Checkers(object):
 					p = BlackPiece((row,col))
 					p.promote()
 					self.black_pieces.append(p)										# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		
+		self.font = pygame.font.Font("data/FEASFBRG.TTF",32)
+		self.create_itens()
+	
+	
+	def create_itens(self):
+		global GAME_TEXT
+		self.itens = []
+		self.buttons = []
+		new = [("Menu",     6),
+		       ('',      None)]
+		
+		itens_height = 0
+		for n in new:
+			if n[1] == None:
+				new_item = Text(n[0])
+				GAME_TEXT = new_item
+			else:
+				new_item = Button(n[0],n[1])
+				self.buttons.append(new_item)
+			
+			width, height = self.font.size(n[0])				# Pega o tamanho ocupado pelo texto
+			itens_height += height
+			
+			new_item.rect = pygame.Rect((0,0),(width, height))	# Cria a área ocupada pelo botão
+			
+			self.itens.append(new_item)
+		
+		# define as posições dos botões na região cinza abaixo do tabuleiro
+		board_width,board_height = self.TILE_X*8, self.TILE_Y*8
+		image_width,image_height = self.board_image.get_size()
+		height_position = board_height + (image_height - board_height)/2
+		width_position = image_width
+		
+		#for b in self.itens:
+			#width_position -= b.rect.width/2 + 5
+			#b.center_position(width_position,height_position)
+			#width_position -= b.rect.width/2
+		
+		b = self.itens[0]
+		b.center_position(self.TILE_X*7,self.TILE_Y*8.5)
+		
+		b = self.itens[1]
+		b.center_position(0,self.TILE_Y*8.5)
+		
+	
 	
 	#
 	def start_checkers(self, minimax=None):
+		global DONE, GAME_TEXT
 		
 		self.__init__(self.screen)
-		
 		self.screen = pygame.display.set_mode(self.board_image.get_size(),RESIZABLE,32)
 		
 		if minimax:
 			mm = Minimax(minimax,self)
 		
 		done = False
-		while not done:
+		DONE = False
+		while not done and not DONE:
 			
 			self.screen.fill((0,0,0))
 			self.screen.blit(self.board_image,(0,0))
+			
+			if self.RED_TURN:
+				GAME_TEXT.update_text("Vermelhas Jogam")
+			else:
+				GAME_TEXT.update_text("Pretas Jogam")
+				self.update(self.screen)
+				pygame.display.flip()
 			
 			if minimax:
 				if not self.RED_TURN:
 					print "START MINIMAX"
 					p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces) # peça, movimento, valor, capturas
-					print "preto jogou",p.position, "para",m
+					print "preto jogou",p.position, "para",m,'por',v
 					
 					if not self.play(p,m):
 						self.RED_TURN = True
-						raw_input("vez das pecas vermelhas")
-					else: raw_input("preta ainda joga")
+						#raw_input("vez das pecas vermelhas")
+					#else: raw_input("preta ainda joga")
+			
 			
 			self.events()
 			self.update(self.screen)
@@ -148,23 +205,85 @@ class Checkers(object):
 		
 			pygame.display.flip()
 	
+	
+	def start_computer_checkers(self, minimax=3,red_heur="default",black_heur="default"):
+		global DONE, GAME_TEXT
+		
+		self.__init__(self.screen)
+		self.screen = pygame.display.set_mode(self.board_image.get_size(),RESIZABLE,32)
+		
+		mm = Minimax(minimax,self)
+		
+		done = False
+		DONE = False
+		while not done and not DONE:
+			
+			self.screen.fill((0,0,0))
+			self.screen.blit(self.board_image,(0,0))
+			self.update(self.screen)
+			pygame.display.flip()
+			if self.RED_TURN:
+				p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.red_pieces,self.black_pieces,reverse=True,heur=red_heur) # peça, movimento, valor, capturas
+				GAME_TEXT.update_text("Pretas Jogam")
+			else:
+				raw_input("AQUI?")
+				p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces,heur=black_heur) # peça, movimento, valor, capturas
+				GAME_TEXT.update_text("Vermelhas Jogam")
+			
+			if not self.play(p,m):
+				self.RED_TURN = not self.RED_TURN
+			
+			
+			
+			
+			self.events()
+			self.update(self.screen)
+			done = self.end_of_game(BOARD_MAP)
+		
+			pygame.display.flip()
+	
+	
 	#
 	def events(self):
+		global DONE
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit(-1)
+			elif event.type == pygame.MOUSEMOTION:
+				self.mouse_motion()
 			elif event.type == pygame.MOUSEBUTTONDOWN:
 				if event.button == 1:	# left button
-					if(self.RED_TURN):
-						pieces = self.red_pieces		#  red  turn to select one piece
-					else: pieces = self.black_pieces	# black turn to select one piece
+					if self.mouse_clicked() >= 0:
+						print "AQUI DEVE SAIR"
+						DONE = True
 					
-					if not self.selected_piece and not CAPTURE_MODE:
-						self.select_piece(pieces)
-					else:
-						self.move_piece(pieces)
-
+	
+	def mouse_clicked(self):
+		m_pos = pygame.mouse.get_pos()
+		for b in self.buttons:
+			if b.rect.collidepoint(m_pos):
+				return b.action
+		
+		if(self.RED_TURN):
+			pieces = self.red_pieces		#  red  turn to select one piece
+		else: pieces = self.black_pieces	# black turn to select one piece
+		
+		if not self.selected_piece and not CAPTURE_MODE:
+			self.select_piece(pieces)
+		else:
+			self.move_piece(pieces)
+		
+		return -1
+	
+	
+	def mouse_motion(self):
+		m_pos = pygame.mouse.get_pos()
+		for b in self.buttons:
+			if b.rect.collidepoint(m_pos):
+				b.set_selected()
+			else: b.set_unselected()
+	
 	#
 	def select_piece(self,pieces):
 		moves = self.generate_moves(pieces,BOARD_MAP)
@@ -276,6 +395,9 @@ class Checkers(object):
 		for piece in self.black_pieces:
 			x,y = piece.position
 			piece.rect = screen.blit(piece.surface,(y*self.TILE_Y,x*self.TILE_X))
+		
+		for i in self.itens:
+			i.draw(screen, self.font)
 	
 	#
 	def capture_pieces(self,board,piece):
@@ -412,18 +534,19 @@ class Checkers(object):
 			self.remove_piece(cap)
 			print piece.position,piece.get_moves(BOARD_MAP)
 			capt_again = True
-			
+		
 		r,c = piece.position
 		BOARD_MAP[r][c] = '.'
 		piece.position = move
 		r,c = piece.position
 		BOARD_MAP[r][c] = piece.group
-		if piece.position[0] == piece.MAX_ROW:
-			piece.promote()
+		
 		
 		if capt_again and len(piece.get_moves(BOARD_MAP)[1]) > 0:
 			return True
 		else:
+			if piece.position[0] == piece.MAX_ROW:
+				piece.promote()
 			return False
 	
 	#

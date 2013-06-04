@@ -23,10 +23,7 @@ def main():
 	
 	checkers = Checkers(screen)
 	
-	f = pygame.font.Font("data/FEASFBRG.TTF",32)
-	
 	state = 0
-	level = 2
 	while True:
 		screen.blit(menu.menu_background,(0,0))
 		menu.update()
@@ -45,11 +42,21 @@ def main():
 					menu.set_menu(1)                     # set the menu whith start game options
 					state = 0
 				elif state == 11:
-					print "1 player mode"
-					checkers.start_checkers(minimax=level)
+					print "1 player mode: Easy"
+					checkers.start_checkers(minimax=3)
 					menu.set_menu(0)
 					state = 0
 				elif state == 12:
+					print "1 player mode: Medium"
+					checkers.start_checkers(minimax=5)
+					menu.set_menu(0)
+					state = 0
+				elif state == 13:
+					print "1 player mode: Hard"
+					checkers.start_checkers(minimax=7)
+					menu.set_menu(0)
+					state = 0
+				elif state == 14:
 					print "2 Players Mode"
 					checkers.start_checkers()
 					menu.set_menu(0)
@@ -57,21 +64,6 @@ def main():
 				elif state == 2:                         # options menu
 					print "Menu Options!"
 					menu.set_menu(2)                     # set the menu whith options for options menu
-					state = 0
-				elif state == 21:
-					print "Hard"
-					level = 3
-					menu.set_menu(0)
-					state = 0
-				elif state == 22:
-					print "Medium"
-					level = 2
-					menu.set_menu(0)
-					state = 0
-				elif state == 23:
-					print "Easy"
-					level = 1
-					menu.set_menu(0)
 					state = 0
 				elif state == 3:                         # about menu
 					print "About"

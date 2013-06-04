@@ -8,26 +8,34 @@ class Minimax(object):
 		self.game = game
 	
 	#
-	def start_minimax(self, board, player1, player2):
-		p,m,v,c =  self.minimax(0, board, player1, player2, self.max_function, self.min_function)
+	def start_minimax(self, board, player1, player2,reverse=False,heur="default"):
+		p,m,v,c =  self.minimax(0, board, player1, player2, self.max_function, self.min_function,reverse=reverse,heur=heur)
 		return p,m,v
 	
 	#
-	def minimax(self,depth, board, player1, player2, max_function, min_function):
-		if depth >= self.depth or self.game.end_of_game(board):											# se a profundidade foi alcaçada
-			#print "\t"*depth,"FIM"
-			return None, None, self.static(player1,player2,board), []											# aplicar a função estática
+	def minimax(self,depth, board, player1, player2, max_function, min_function,reverse=False,heur="default"):
+		if self.end_game(board):
+			if len(player1) == 0:
+				return  None,None,-1000, []
+			else: return None,None,1000, []
+		elif depth >= self.depth:											# se a profundidade foi alcaçada
+			print "\t"*depth,"FIM",self.static(player1,player2,board,heur=heur)
+			for l in board:
+				print "\t"*depth,l
+			return None, None, self.static(player1,player2,board,heur=heur), []		# aplicar a função estática
 		else:
+			
 			moves = self.game.generate_moves(player1,board)
 			
 			
-			#s = "\t"*depth
-			#for bb in board:
-				#print s,bb
+			s = "\t"*depth
+			print "\n"
+			for bb in board:
+				print s,bb
 			
 			my_move = None
 			
-			#print s,player1[0].__class__
+			print s,player1[0].__class__
 			#for psd in player1:
 				#print s,psd.position,psd.get_moves(board)
 			#print s,player2[0].__class__
@@ -38,49 +46,52 @@ class Minimax(object):
 				#print s,"==================+>",p[0].position,p[1],p[2]
 				for m in p[1]:		# para cada movimento da peça
 					
-					#print s,p[0].position, m
+					print s,p[0].position, m
 					
 					# gerar um novo estado
 					b = copy.deepcopy(board)
-					#print s,"id Tabuleiro",id(board),id(b)
 					p1 = copy.deepcopy(player1)
-					#print s,"id p1",id(player1),id(p1)
 					p2 = copy.deepcopy(player2)
-					#print s,"id p2",id(player2),id(p2)
 					
 					for pc in p1:	# para cada peça na cópia
 						if pc.position == p[0].position:		#
 							np = pc
 					
-					#np = copy.deepcopy(p[0])						# O ERRO ABAIXO DESCRITO DEVE SER REPARADO AQUI
-					#np1 = copy.deepcopy(p1)
-					#np2 = copy.deepcopy(p2)
 					ns = self.new_state(b,np,m,p1,p2)
-					"""# AQUI ESTÁ O ERRO, NO LUGAR DE P[0] DEVE ESTAR
-																	# UMA CÓPIA DESTA PEÇA QUE ESTÁ NA CÓPIA DA LISTA
-																	# EM QUE A PEÇA ORIGINAL ESTÁ (É TALVEZ NÃO FAÇA SENTIDO,
-																	# MAS É ISSO E MESMO)
-																	"""
+					if ns == None:
+						if len(player1) == 0:
+							return  None,None,-1000, []
+						else: return None,None,1000, []
 					
-					#for nnn in np2:
-						#print s,">>>",nnn.position
-					#print "sim, peça capturada", ns[3]
 					
-					#for bb in ns[0]:
-						#print s,bb
+					n, move, value, cap = self.minimax(depth+1, b, p2, p1, min_function, max_function,heur=heur)
+					if b == None:
+						print ">>>>>>>>>> b"
+					elif p2 == None:
+						print ">>>>>>>>>> p2"
+					elif p1 == None:
+						print ">>>>>>>>>> p1"
 					
-					# aplicar o minimax no novo estado analisando as jogadas do outro jogador
-					#n, move, value, cap = self.minimax(depth+1, nb, np2, np1, min_function, max_function)
-					n, move, value, cap = self.minimax(depth+1, b, p2, p1, min_function, max_function)
-					#print value
-					
-					if my_move == None or max_function(my_move[2],value) == value:
-						#print "CAPTURA FINAL",copy.deepcopy(cap)
-						#print "HERE",id(ns[3]),ns[3]
+					if reverse:
+						if my_move == None or min_function(my_move[2],value) == value:
+							my_move = p[0],m,value,copy.deepcopy(ns[3])
+					elif my_move == None or max_function(my_move[2],value) == value:
 						my_move = p[0],m,value,copy.deepcopy(ns[3])
-						#print "AQUI",id(ns[3]),ns[3]
 			return my_move
 	
+	#
+	def end_game(self,board):
+		red = False
+		black = False
+		for row in board:
+			for col in row:
+				if col == 'r' or col == 'R':
+					red = True
+				elif col == 'b' or col == 'B':
+					black = True
+		if red and black:
+			return False
+		else: return True
 	
 	#
 	def new_state(self,board,piece,move,p1,p2,captured=None):
@@ -155,23 +166,128 @@ class Minimax(object):
 		return board,p1,p2,captured
 	
 	
-	def static(self,player1,player2,board):
-		if len(player1) == 0:
-			return -1000
-		elif len(player2) == 0:
-			return 1000
+	
+	# f1 = pesos dos tabuleiros
+	# f2 = número de damas
+	# f3 = captura e capuradas
+	# f4 = 
+	#
+	def static(self,player1,player2,board,heur="default"):
+		if player1[0].group == 'r' or player1[0].group == 'R':
+			r = player1
+			b = player2
+		else:
+			r = player2
+			b = player1
 		
+		if heur == "checkers":		# Número de Damas
+			print "Checkers Heuristic"
+			return self.f2(r,b)
+		elif heur == "captures":	# Número de capturas
+			print "Captures Heuristic"
+			return self.f3(r,b,board)
+		elif heur == "mobility":	# Mobilidade das peças
+			print "Mobility Heuristic"
+			return self.f4(r,b,board)
+		elif heur == "try":
+			# OBS.: somar o número de damas à f1
+			return self.f1(board) + self.f2(r,b)
+			
+		else:						# Força do tabuleiro
+			#print "Board Power Heuristic"
+			return self.f1(board)
 		
-		moves1 = self.game.generate_moves(player1,board)
-		moves2 = self.game.generate_moves(player2,board)
-		p1,p2 = 0,0
+	
+	def f1(self,board):
+		"""
+			Faz o cálculo da força do tabuleiro para as peças pretas
+		"""
+		red = 0
+		black = 0
+		for i, row in enumerate(board):
+			for j, col in enumerate(board):
+				if i in [3,4] and j in [3,4]:
+					if board[i][j] == 'r':
+						red += 2
+					elif  board[i][j] == 'R':
+						red += 5
+					if board[i][j] == 'b':
+						black += 2
+					elif  board[i][j] == 'B':
+						black += 5
+				elif i in range(2,6) and j in range(2,6):
+					if board[i][j] == 'r':
+						red += 4
+					elif  board[i][j] == 'R':
+						red += 10
+					if board[i][j] == 'b':
+						black += 4
+					elif  board[i][j] == 'B':
+						black += 10
+				elif i in range(1,7) and j in range(1,7):
+					if board[i][j] == 'r':
+						red += 6
+					elif  board[i][j] == 'R':
+						red += 15
+					if board[i][j] == 'b':
+						black += 6
+					elif  board[i][j] == 'B':
+						black += 15
+				elif i in range(0,8) and j in range(0,8):
+					if board[i][j] == 'r':
+						red += 8
+					elif  board[i][j] == 'R':
+						red += 20
+					if board[i][j] == 'b':
+						black += 8
+					elif  board[i][j] == 'B':
+						black += 20
+		return black-red
+	
+	def f2(self,reds,blacks):
+		"""
+			Faz o cáculo de damas e peças que podem ser promovidas na próxima jogada
+		"""
+		r = 0
+		b = 0
+		for i in reds:
+			if i.group == 'R':
+				r += 5
+			elif i.position[0] == i.MAX_ROW + 1:
+				r += 3
+		for i in blacks:
+			if i .group == 'B':
+				b += 5
+			elif i.position[0] == i.MAX_ROW -1:
+				b += 3
+		return b-r
+	
+	def f3(self,reds,blacks,board):
+		"""
+			calcula o número de capturas
+		"""
+		r = 0
+		b = 0
+		for p in reds:
+			r += len( p.get_moves(board)[1] )
 		
-		for m in moves1:
-			p1 += len(m[1])
-		for m in moves2:
-			p2 += len(m[1])
+		for p in blacks:
+			b += len( p.get_moves(board)[1] )
 		
-		return (p1/len(player1)) - (p2/len(player2))
+		return b-r
+	
+	def f4(self,reds,blacks,board):
+		"""
+			cálculo da mobilidade
+		"""
+		r = 0
+		b = 0
+		for p in reds:
+			r += len( p.get_moves(board)[0] )
+		for p in blacks:
+			b += len( p.get_moves(board)[0] )
+		return b-r
+	
 	
 	#
 	def max_function(self,value1,value2):
@@ -183,6 +299,7 @@ class Minimax(object):
 
 
 #----[ MINIMAX TESTE ]------------------------------------------------#
+
 if __name__ == "__main__":
 	from checkers import *
 	import pygame
@@ -192,28 +309,28 @@ if __name__ == "__main__":
 	screen = pygame.display.set_mode((0,0))
 	
 	
-	BOARD = [['#','.','#','.','#','b','#','.'],
-			 ['.','#','.','#','b','#','.','#'],
-			 ['#','b','#','b','#','.','#','r'],
-			 ['.','#','.','#','.','#','b','#'],
-			 ['#','r','#','.','#','.','#','b'],
-			 ['.','#','.','#','r','#','r','#'],
-			 ['#','r','#','.','#','r','#','r'],
-			 ['.','#','.','#','.','#','.','#']]
+	#BOARD = [['#','.','#','.','#','b','#','.'],
+			 #['.','#','.','#','b','#','.','#'],
+			 #['#','b','#','b','#','.','#','r'],
+			 #['.','#','.','#','.','#','b','#'],
+			 #['#','r','#','.','#','.','#','b'],
+			 #['.','#','.','#','r','#','r','#'],
+			 #['#','r','#','.','#','r','#','r'],
+			 #['.','#','.','#','.','#','.','#']]
 	
 	c = Checkers(screen)
-	c.set_test(BOARD)
+	#c.set_test(BOARD)
 	
-	print "RED"
-	for p in c.red_pieces:
-		print p.position,p.get_moves(BOARD)
-	print "BLACK"
-	for p in c.black_pieces:
-		print p.position,p.get_moves(BOARD)
+	#print "RED"
+	#for p in c.red_pieces:
+		#print p.position,p.get_moves(BOARD)
+	#print "BLACK"
+	#for p in c.black_pieces:
+		#print p.position,p.get_moves(BOARD)
 	
-	m = Minimax(3,c)
+	#m = Minimax(3,c)
 	
-	m.start_minimax(BOARD,c.black_pieces,c.red_pieces)
+	#m.start_minimax(BOARD,c.black_pieces,c.red_pieces)
 	
 	
 	##---[ TESTANDO O GERADOR DE ESTADOS ]-------------------------------#
@@ -236,36 +353,48 @@ if __name__ == "__main__":
 				  ##['#','r','#','.','#','r','#','r'],
 				  ##['.','#','.','#','.','#','.','#']]
 				  
-	#test_board =   [['#','.','#','.','#','.','#','.'],
-					#['.','#','.','#','b','#','b','#'],
-					#['#','.','#','b','#','.','#','r'],
-					#['b','#','.','#','.','#','b','#'],
-					#['#','r','#','.','#','.','#','b'],
-					#['.','#','.','#','r','#','r','#'],
-					#['#','r','#','.','#','r','#','r'],
-					#['.','#','.','#','.','#','.','#']]
+	test_board =   [['#','B','#','.','#','.','#','.'],
+					['.','#','.','#','b','#','b','#'],
+					['#','.','#','b','#','.','#','r'],
+					['b','#','.','#','.','#','b','#'],
+					['#','r','#','.','#','.','#','b'],
+					['.','#','.','#','r','#','r','#'],
+					['#','r','#','.','#','r','#','r'],
+					['.','#','.','#','.','#','.','#']]
+	
+	test_board =   [['#','B','#','.','#','R','#','.'],
+					['.','#','.','#','r','#','.','#'],
+					['#','.','#','b','#','.','#','r'],
+					['b','#','.','#','.','#','b','#'],
+					['#','r','#','.','#','.','#','b'],
+					['.','#','.','#','r','#','r','#'],
+					['#','b','#','b','#','r','#','r'],
+					['.','#','.','#','.','#','.','#']]
 	
 	
-	#reds = []
-	#blacks = []
-	#for row in range(len(test_board)):
-		#for col in range(len(test_board[0])):
-			#if test_board[row][col] == 'r':
-				#p = RedPiece((row,col))
-				#reds.append(p)
+	reds = []
+	blacks = []
+	for row in range(len(test_board)):
+		for col in range(len(test_board[0])):
+			if test_board[row][col] == 'r':
+				p = RedPiece((row,col))
+				reds.append(p)
 				
-			#if test_board[row][col] == 'b':
-				#p = BlackPiece((row,col))
-				#blacks.append(p)
+			if test_board[row][col] == 'b':
+				p = BlackPiece((row,col))
+				blacks.append(p)
 			
-			#if test_board[row][col] == 'R':
-				#p = RedPiece((row,col))
-				#p.promote()
-				#reds.append(p)
-			#if test_board[row][col] == 'B':
-				#p = BlackPiece((row,col))
-				#p.promote()
-				#blacks.append(p)
+			if test_board[row][col] == 'R':
+				p = RedPiece((row,col))
+				p.promote()
+				reds.append(p)
+			if test_board[row][col] == 'B':
+				p = BlackPiece((row,col))
+				p.promote()
+				blacks.append(p)
+	
+	
+	print ">",Minimax(None,c).f4(reds,blacks,test_board)
 	
 	#p1 = reds
 	#p2 = blacks
@@ -344,14 +473,3 @@ if __name__ == "__main__":
 	
 	
 #----[ END OF FILE ]--------------------------------------------------#
-
-#(pretas) [(jogadas pretas)]
-#(0, 5) [(1, 6)]
-#(1, 4) [(2, 5)]
-#(2, 1) [(3, 2), (3, 0)]
-#(2, 3) [(3, 4), (3, 2)]
-#(3, 6) [(4, 5)]
-
-
-
-

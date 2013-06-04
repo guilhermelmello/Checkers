@@ -10,63 +10,73 @@ BLUE  = (  0,  0,255)
 WHITE = (255,255,255)
 
 class Menu():
-	def __init__(self, screen, font_file = "data/FEASFBRG.TTF", bg_file = "images/menu.png"):
+	def __init__(self, screen, font_file = "data/FEASFBRG.TTF", bg_file = "images/menu2.png"):
 		self.menu_background = pygame.image.load(bg_file)
 		self.menu_font       = pygame.font.Font(font_file,32)
 		self.menu_screen     = screen
 		self.menu_itens      = []
+		self.menu_buttons    = []
 		
 		self.set_menu(0)
 	
 	#
 	def create_buttons(self,buttons):
 		
-		buttons_height = 0
+		self.menu_buttons = []
+		itens_height = 0
 		
 		for b in buttons:
-			new_button = Button(b[0],b[1])
+			if b[1] == None:
+				new_item = Text(b[0])
+			else:
+				new_item = Button(b[0],b[1])
+				self.menu_buttons.append(new_item)
 			
 			width, height = self.menu_font.size(b[0])				# Pega o tamanho ocupado pelo texto
-			buttons_height += height
+			itens_height += height
 			
-			new_button.rect = pygame.Rect((0,0),(width, height))	# Cria a área ocupada pelo botão
+			new_item.rect = pygame.Rect((0,0),(width, height))	# Cria a área ocupada pelo botão
 			
-			self.menu_itens.append(new_button)
+			self.menu_itens.append(new_item)
 		
 		# define as posições dos botões na tela de forma centralizada
 		menu_width,menu_height = self.menu_background.get_rect().size
-		button_position = (menu_height - buttons_height)/2
+		itens_position = (menu_height - itens_height)/2
 		
 		for b in self.menu_itens:
-			b.center_position(menu_width/2,button_position)
-			button_position += b.rect.height
+			b.center_position(menu_width/2,itens_position)
+			itens_position += b.rect.height
 	
 	
 	def set_menu(self,menu_id):
 		self.menu_itens = []
 		if menu_id == 1:	# Start Menu
-			my_buttons = [('1 Player Mode',  11),
-			              ('2 Players Mode ',12),
-			              ('Back',            6)]
-		elif menu_id == 2:	# Options Menu
-			my_buttons = [('Hard',           21),
-			              ('Medium',         22),
-			              ('Easy',           23),
-			              ('Back',            6)]
+			my_itens = [('Vs Computador:',None),
+			            ('Facil',           11),
+			            ('Medio',           12),
+			            ('Dificil',         13),
+			            ('',              None),
+			            ('Vs Jogador',      14),
+			            ('',              None),
+			            ('Voltar',           6)]
+		elif menu_id == 2:	# Score Menu
+			my_itens = [('Pontuacao',     None),
+			            ('Voltar',           6)]
 		elif menu_id == 3:	# About Menu
-			my_buttons = [('Back',            6)]
+			my_itens = [('Regras',        None),
+			            ('Voltar',           6)]
 		else:				# Main Menu
-			my_buttons = [('Start',   1),
-			              ('Options', 2),
-			              ('About',   3),
-			              ('Exit',  100)]
+			my_itens = [('Jogar',     1),
+			            ('Pontuacao', 2),
+			            ('Regras',    3),
+			            ('Sair',    100)]
 		
-		self.create_buttons(my_buttons)
+		self.create_buttons(my_itens)
 	
 	# Change the color buttons when the mouse is on
 	def mouse_motion(self):
 		m_pos = pygame.mouse.get_pos()
-		for b in self.menu_itens:
+		for b in self.menu_buttons:
 			if b.rect.collidepoint(m_pos):
 				b.set_selected()
 			else: b.set_unselected()
@@ -85,20 +95,29 @@ class Menu():
 			item.draw(self.menu_screen,self.menu_font)
 
 
-class Button():
-	def __init__(self,text,action):
+
+class MenuItem():
+	def __init__(self,text,color):
 		self.text              = text        # Texto do botão
-		self.action            = action      # Ação (estado) que o botão gera
-		self.selected          = False       # Inicialmente o botão não está selecionado
-		self.color_selected    = RED         # Cor padrão do texto do batão selecionado - Vermelho
-		self.color_unselected  = BLACK       # Cor padrão do texto do botão - Preta
-		self.color             = BLACK       # Cor padrão do texto
+		self.color             = color       # Cor padrão do texto
 		self.position          = (0,0)       # O botão não sabe onde será desenhado
 		self.rect              = None        # O botão não foi desenhado na tela
-	
+
 	def center_position(self,x,y):
 		self.rect.center = (x,y)
 		self.position = self.rect.topleft
+
+	def draw(self,screen,font):
+		b = font.render(self.text,True,self.color)
+		self.rect = screen.blit(b,self.position)
+
+class Button(MenuItem):
+	def __init__(self,text,action):
+		MenuItem.__init__(self,text,BLACK)
+		self.action            = action      # Ação (estado) que o botão gera
+		self.color_selected    = RED         # Cor padrão do texto do batão selecionado - Vermelho
+		self.color_unselected  = BLACK       # Cor padrão do texto do botão - Preta
+		self.selected          = False       # Inicialmente o botão não está selecionado
 	
 	def set_selected(self):
 		self.selected = True
@@ -108,7 +127,12 @@ class Button():
 		self.selected = False
 		self.color = self.color_unselected
 	
-	def draw(self,screen,font):
-		b = font.render(self.text,True,self.color)
-		self.rect = screen.blit(b,self.position)
+
+class Text(MenuItem):
+	def __init__(self,text):
+		MenuItem.__init__(self,text,WHITE)
+	
+	def update_text(self,s):
+		self.text = s
+
 
