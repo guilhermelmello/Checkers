@@ -487,14 +487,14 @@ class Checkers(object):
 				print "FIM DE JOGO, Vermelhas Venceram"
 			return True
 		
-		if CAPTURE_COUNT >= 40:	# 20 jogadas de cada jogador
+		if CAPTURE_COUNT >= 40:		# 20 jogadas de cada jogador
 			print "FIM DE JOGO, EMPATE"
 			return True
 		
 		R,r = 0,0
 		B,b = 0,0
 		
-		if CAPTURE_COUNT >= 5:		# 5 jogadas de cada jogador
+		if CAPTURE_COUNT >= 10:		# 5 jogadas de cada jogador
 			for ps in [self.red_pieces,self.black_pieces]:
 				for p in ps:
 					if p.group == 'r':
@@ -517,6 +517,16 @@ class Checkers(object):
 		
 		
 		return False
+	
+	def fim_de_jogo(self,estado):
+		if len(estado.vermelhas) == 0 or len(self.generate_moves(estado.vermelhas,estado.tabuleiro)) == 0:
+			return True
+		elif len(estado.pretas) == 0 or len(self.generate_moves(estado.pretas,estado.tabuleiro)) == 0:
+			return True
+		return False
+		
+		# FALTA TRATAR OS CASOS DE EMPATE
+	
 	
 	#
 	def play(self, piece, move):

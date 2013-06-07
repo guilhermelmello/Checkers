@@ -2,6 +2,8 @@
 
 import copy,sys
 
+global INFINITY
+
 class Minimax(object):
 	def __init__(self, depth, game):
 		self.depth = depth
@@ -197,7 +199,7 @@ class Minimax(object):
 			#print "Board Power Heuristic"
 			return self.f1(board)
 		
-	
+	#
 	def f1(self,board):
 		"""
 			Faz o cálculo da força do tabuleiro para as peças pretas
@@ -243,7 +245,7 @@ class Minimax(object):
 					elif  board[i][j] == 'B':
 						black += 20
 		return black-red
-	
+	#
 	def f2(self,reds,blacks):
 		"""
 			Faz o cáculo de damas e peças que podem ser promovidas na próxima jogada
@@ -261,7 +263,7 @@ class Minimax(object):
 			elif i.position[0] == i.MAX_ROW -1:
 				b += 3
 		return b-r
-	
+	#
 	def f3(self,reds,blacks,board):
 		"""
 			calcula o número de capturas
@@ -275,7 +277,7 @@ class Minimax(object):
 			b += len( p.get_moves(board)[1] )
 		
 		return b-r
-	
+	#
 	def f4(self,reds,blacks,board):
 		"""
 			cálculo da mobilidade
@@ -299,6 +301,65 @@ class Minimax(object):
 
 
 #----[ MINIMAX TESTE ]------------------------------------------------#
+
+
+class Decisao_Minimax(object):
+	global INFINITY
+	
+	def __init__(self,profundidade, jogo):
+		INFINITY = 1000
+		
+		self.profundidade = profundidade
+		self.jogo = jogo
+	
+	
+	def comecar(self,estado,jogador, oponente):
+		v = self.valor_max(estado,0,jogador, oponente)
+		return v
+	
+	
+	def valor_max(self,estado, profundidade, jogador, oponente):
+		if self.profundo_o_suficiente(estado,profundidade):
+			return self.utilidade(estado, jogador)
+		v = -INFINITY
+		
+		for a, s in self.sucessores(estado, jogador):
+			v = max(v, self.valor_min(s,profundidade+1,jogador, oponente))
+		return v
+	
+	
+	def valor_min(self,estado, profundidade, jogador, oponente):
+		if self.profundo_o_suficiente(estado,profundidade):
+			return self.utilidade(estado, oponente)
+		v = INFINITY
+		
+		for a, s in self.sucessores(estado, oponente):
+			v = min(v, self.valor_max(s,profundidade+1,jogador, oponente))
+		return v
+	
+	
+	# OK
+	def profundo_o_suficiente(self,estado,profundidade):
+		return profundidade >= self.profundidade or self.jogo.fim_de_jogo(estado)
+
+	#
+	def sucessores(self, estado, jogador):
+		if self.profundo_o_suficiente(estado,0):	# A profundidade não importa neste caso
+			return None
+		else:
+			movimentos = self.jogo.generate_moves(jogador,estado.tabuleiro)
+			print "movimentos\n",movimentos
+			for 
+
+
+
+class Estado(object):
+	def __init__(self,vermelhas,pretas,tabuleiro):
+		self.vermelhas = copy.deepcopy(vermelhas)
+		self.pretas = copy.deepcopy(pretas)
+		self.tabuleiro = copy.deepcopy(tabuleiro)
+
+
 
 if __name__ == "__main__":
 	from checkers import *
@@ -362,13 +423,13 @@ if __name__ == "__main__":
 					['#','r','#','.','#','r','#','r'],
 					['.','#','.','#','.','#','.','#']]
 	
-	test_board =   [['#','B','#','.','#','R','#','.'],
-					['.','#','.','#','r','#','.','#'],
-					['#','.','#','b','#','.','#','r'],
-					['b','#','.','#','.','#','b','#'],
-					['#','r','#','.','#','.','#','b'],
-					['.','#','.','#','r','#','r','#'],
-					['#','b','#','b','#','r','#','r'],
+	test_board =   [['#','.','#','.','#','.','#','.'],
+					['.','#','.','#','.','#','.','#'],
+					['#','.','#','.','#','b','#','.'],
+					['.','#','.','#','.','#','.','#'],
+					['#','R','#','.','#','.','#','.'],
+					['.','#','.','#','.','#','.','#'],
+					['#','.','#','.','#','.','#','.'],
 					['.','#','.','#','.','#','.','#']]
 	
 	
@@ -392,82 +453,14 @@ if __name__ == "__main__":
 				p = BlackPiece((row,col))
 				p.promote()
 				blacks.append(p)
+				
+	meu_estado = Estado(reds,blacks,test_board)
+	
+	dm = Decisao_Minimax(3,c)
+	dm.sucessores(meu_estado,meu_estado.pretas)
 	
 	
-	print ">",Minimax(None,c).f4(reds,blacks,test_board)
 	
-	#p1 = reds
-	#p2 = blacks
-	
-	##print p1[0].__class__
-	##for p in p1:
-		##print p.position,p.get_moves(test_board)
-	##print p2[0].__class__
-	##for p in p2:
-		##print p.position,p.get_moves(test_board)
-	
-	#m  = Minimax(2,c)
-	
-	#for p in p2:
-		#if p.position == (3,0):
-			#for mo in p.get_moves(test_board)[0]:
-				
-				
-				#print "TESTANDO GERADOR DE ESTADOS PARA",p.position,mo
-				##print "ANTES",p2[0].__class__
-				##for l in p2:
-					##print id(l),l.position
-				
-				##print "ANTES",p1[0].__class__
-				##for l in p1:
-					##print id(l),l.position
-				
-				
-				#new_board = copy.deepcopy(test_board)
-				#new_p = copy.deepcopy(p)
-				#new_p1 = copy.deepcopy(p1)
-				#new_p2 = copy.deepcopy(p2)
-				#for np2 in new_p2:
-					#if np2.position == p.position:
-						#new_p = np2
-				
-				##print "\nNOVAS ANTES",new_p2[0].__class__
-				##for l in new_p2:
-					##print id(l),l.position
-				
-				##print "\nNOVAS ANTES",new_p1[0].__class__
-				##for l in new_p1:
-					##print id(l),l.position
-				
-				#print "TABULEIRO ANTES"
-				#for l in test_board:
-					#print l
-				#print "NOVO TABULEIRO ANTES"
-				#for l in new_board:
-					#print l
-				
-				#new_board, new_p2, new_p1, cap = m.new_state(new_board,new_p,mo,new_p2,new_p1)# pretas jogam
-				
-				#print "TABULEIRO DEPOIS"
-				#for l in test_board:
-					#print l
-				#print "NOVO TABULEIRO DEPOIS"
-				#for l in new_board:
-					#print l
-				
-				##print "\nDEPOIS",p2[0].__class__
-				##for l in p2:
-					##print id(l),l.position
-				##print "\nDEPOIS",p1[0].__class__
-				##for l in p1:
-					##print id(l),l.position
-				
-				##print "\nNOVAS DEPOIS",new_p2[0].__class__
-				##for l in new_p2:
-					##print id(l),l.position
-				##print "\nNOVAS DEPOIS",new_p1[0].__class__
-				##for l in new_p1:
-					##print id(l),l.position
 			
 			
 	
