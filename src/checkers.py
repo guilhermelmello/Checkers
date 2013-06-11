@@ -523,9 +523,9 @@ class Checkers(object):
 			return True
 		elif len(estado.pretas) == 0 or len(self.generate_moves(estado.pretas,estado.tabuleiro)) == 0:
 			return True
+		# FALTA TRATAR OS CASOS DE EMPATE
 		return False
 		
-		# FALTA TRATAR OS CASOS DE EMPATE
 	
 	
 	#
@@ -929,9 +929,3 @@ class BlackPiece(Piece):
 	def right_col(self,col):
 		return col - 1
 	
-
-
-	
-	
-	
-	 

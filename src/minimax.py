@@ -97,11 +97,11 @@ class Minimax(object):
 	
 	#
 	def new_state(self,board,piece,move,p1,p2,captured=None):
-		# encontrar a peça e verificar se o movimento realizado
-		# possui capturas ou não, caso tenha capturas, gerar mais
-		# um estado (após a captura), iniciando a recursão
-		# caso contrário, não possui capturas, retornar o estado gerado
-		# Obs.: ao realizar a captura, remover a peça adversária.
+	# encontrar a peça e verificar se o movimento realizado
+	# possui capturas ou não, caso tenha capturas, gerar mais
+	# um estado (após a captura), iniciando a recursão
+	# caso contrário, não possui capturas, retornar o estado gerado
+	# Obs.: ao realizar a captura, remover a peça adversária.
 		if self.game.end_of_game(board):
 			return
 		#print "piece",piece.position,"id",id(piece)
@@ -307,57 +307,232 @@ class Decisao_Minimax(object):
 	global INFINITY
 	
 	def __init__(self,profundidade, jogo):
+		global INFINITY
 		INFINITY = 1000
 		
 		self.profundidade = profundidade
 		self.jogo = jogo
 	
 	
+	#
 	def comecar(self,estado,jogador, oponente):
 		v = self.valor_max(estado,0,jogador, oponente)
 		return v
 	
 	
+	#
 	def valor_max(self,estado, profundidade, jogador, oponente):
+		print "MAX"
+		
 		if self.profundo_o_suficiente(estado,profundidade):
-			return self.utilidade(estado, jogador)
+			return self.utilidade(estado.tabuleiro, jogador, oponente)
+		
 		v = -INFINITY
 		
-		for a, s in self.sucessores(estado, jogador):
+		
+		for s in self.sucessores(estado, jogador):
+			print "vermelhas"
+			for k in s.vermelhas:
+				print k.position
+			print "pretas"
+			for k in s.pretas:
+				print k.position
+			for k in s.tabuleiro:
+				print k
 			v = max(v, self.valor_min(s,profundidade+1,jogador, oponente))
 		return v
 	
 	
+	#
 	def valor_min(self,estado, profundidade, jogador, oponente):
+		print "MIN"
+		
 		if self.profundo_o_suficiente(estado,profundidade):
-			return self.utilidade(estado, oponente)
+			return self.utilidade(estado.tabuleiro, jogador, oponente)
 		v = INFINITY
 		
-		for a, s in self.sucessores(estado, oponente):
+		for s in self.sucessores(estado, oponente):
 			v = min(v, self.valor_max(s,profundidade+1,jogador, oponente))
 		return v
+	
+	#
+	def utilidade(self,tabuleiro,jogador,oponente):
+		global INFINITY
+		
+		if len(jogador) == 0 or len(self.jogo.generate_moves(jogador,tabuleiro)) == 0:
+			return -INFINITY
+		elif len(oponente) == 0 or len(self.jogo.generate_moves(oponente,tabuleiro)) == 0:
+			return INFINITY
+		
+		red = 0
+		black = 0
+		for i, row in enumerate(tabuleiro):
+			for j, col in enumerate(tabuleiro):
+				casa = tabuleiro[i][j]
+				if i in [3,4] and j in [3,4]:
+					if casa == 'r':
+						red += 2
+					elif casa == 'R':
+						red += 5
+					if casa == 'b':
+						black += 2
+					elif  casa == 'B':
+						black += 5
+				elif i in range(2,6) and j in range(2,6):
+					if casa == 'r':
+						red += 4
+					elif  casa == 'R':
+						red += 10
+					if casa == 'b':
+						black += 4
+					elif  casa == 'B':
+						black += 10
+				elif i in range(1,7) and j in range(1,7):
+					if casa == 'r':
+						red += 6
+					elif  casa == 'R':
+						red += 15
+					if casa == 'b':
+						black += 6
+					elif  casa == 'B':
+						black += 15
+				elif i in range(0,8) and j in range(0,8):
+					if casa == 'r':
+						red += 8
+					elif  casa == 'R':
+						red += 20
+					if casa == 'b':
+						black += 8
+					elif  casa == 'B':
+						black += 20
+		
+		if jogador[0].group == 'r' or jogador[0].group == 'R':
+			return red-black
+		else:
+			return black-red
 	
 	
 	# OK
 	def profundo_o_suficiente(self,estado,profundidade):
 		return profundidade >= self.profundidade or self.jogo.fim_de_jogo(estado)
-
+	
+	
+	# OK
+	
+	def proximo_estado(self, estado, movimento):
+		"""
+		Recebe um estado e um movimento, retornando um novo estado.
+		O estado resultante é construído com a aplicação do movimento
+		no estado recebido.
+		"""
+		novo_estado = copy.deepcopy(estado)
+		novo_peca   = None
+		jogador     = None
+		oponente    = None
+		
+		pos_ini = movimento.pos_inicial
+		casa = novo_estado.tabuleiro[pos_ini[0]][pos_ini[1]]
+		if casa == 'r' or casa == 'R':
+			jogador  = novo_estado.vermelhas
+			oponente = novo_estado.pretas
+		elif casa == 'b' or casa == 'B':
+			jogador  = novo_estado.pretas
+			oponente = novo_estado.vermelhas
+		
+		for peca in jogador:
+			if peca.position == movimento.pos_inicial:
+				novo_peca = peca
+				break
+		
+		# atualizar o estado
+		self.proximo_estado_auxiliar(novo_peca,novo_estado,movimento)
+		
+		for peca in copy.copy(oponente):
+			pos = peca.position
+			if pos in movimento.captura:
+				novo_estado.tabuleiro[pos[0]][pos[1]] = '.'
+				oponente.remove(peca)
+		
+		# promover a peça, após a jogada ela parou
+		# em uma casa de coroação
+		if novo_peca.position[0] == novo_peca.MAX_ROW:
+			novo_peca.promote()
+			pos_prom = novo_peca.position
+			novo_estado.tabuleiro[pos_prom[0]][pos_prom[1]] = novo_peca.group
+		
+		return movimento,novo_estado
+	
+	
+	def proximo_estado_auxiliar(self,peca,estado, movimento):
+		"""
+		Faz a análise e geração do próximo estado, verificando
+		se existe captura ou não e tratando a captura em
+		sequencia
+		"""
+		pos_ini = movimento.pos_inicial
+		pos_fin = movimento.pos_final
+		
+		estado.tabuleiro[pos_ini[0]][pos_ini[1]] = '.'
+		estado.tabuleiro[pos_fin[0]][pos_fin[1]] = peca.group
+		peca.position = pos_fin
+		pos_anterior = movimento.pos_inicial
+		
+		if len(movimento.captura) > 0:
+			pos_cap = movimento.captura[-1]
+			estado.tabuleiro[pos_cap[0]][pos_cap[1]] = 'x'
+			
+			cap_seq = peca.get_moves(estado.tabuleiro)
+			if len(cap_seq[1]) > 0:
+				movimento.pos_inicial = movimento.pos_final
+				movimento.pos_final = cap_seq[0][0]
+				movimento.captura.append(cap_seq[1][0])
+				
+				self.proximo_estado_auxiliar(peca,estado,movimento)
+				movimento.pos_inicial = pos_anterior
+	
+	
 	#
 	def sucessores(self, estado, jogador):
-		if self.profundo_o_suficiente(estado,0):	# A profundidade não importa neste caso
-			return None
+		if self.profundo_o_suficiente(estado,0):		# A profundidade não importa neste caso
+			return [],[]								# apenas interessa saber os estados sucessores
+														# caso exista algum
 		else:
+			proximos_estados = []						# lista com os próximos estados
+			proximos_movimentos = []					# lista com os próximos movimentos
 			movimentos = self.jogo.generate_moves(jogador,estado.tabuleiro)
-			print "movimentos\n",movimentos
-			for 
-
+			
+			for peca in movimentos:						# para cada peça com movimento
+				for i, jogada in enumerate(peca[1]):	# para cada jogada da peça
+					if len(peca[2]) == len(peca[1]):
+						movimento = Movimento(peca[0].position,jogada,[peca[2][i]])
+					else:
+						movimento = Movimento(peca[0].position,jogada,[])
+					movimento,novo_estado = self.proximo_estado(estado,movimento)
+					proximos_estados.append(novo_estado)
+					proximos_movimentos.append(movimento)
+			
+			return proximos_estados,proximos_movimentos
+	
+	
 
 
 class Estado(object):
+	
+	# OBS.: Talvez seja necessário adicionar uma
+	# lista para armazenar qual foi a jogada que
+	# gerou o estado (armazenar o movimento)
+	
 	def __init__(self,vermelhas,pretas,tabuleiro):
 		self.vermelhas = copy.deepcopy(vermelhas)
 		self.pretas = copy.deepcopy(pretas)
 		self.tabuleiro = copy.deepcopy(tabuleiro)
+
+
+class Movimento(object):
+	def __init__(self,pos_inicial,pos_final,captura):
+		self.pos_inicial = pos_inicial
+		self.pos_final   = pos_final
+		self.captura     = captura
 
 
 
@@ -369,66 +544,23 @@ if __name__ == "__main__":
 	
 	screen = pygame.display.set_mode((0,0))
 	
-	
-	#BOARD = [['#','.','#','.','#','b','#','.'],
-			 #['.','#','.','#','b','#','.','#'],
-			 #['#','b','#','b','#','.','#','r'],
-			 #['.','#','.','#','.','#','b','#'],
-			 #['#','r','#','.','#','.','#','b'],
-			 #['.','#','.','#','r','#','r','#'],
-			 #['#','r','#','.','#','r','#','r'],
-			 #['.','#','.','#','.','#','.','#']]
-	
 	c = Checkers(screen)
-	#c.set_test(BOARD)
 	
-	#print "RED"
-	#for p in c.red_pieces:
-		#print p.position,p.get_moves(BOARD)
-	#print "BLACK"
-	#for p in c.black_pieces:
-		#print p.position,p.get_moves(BOARD)
-	
-	#m = Minimax(3,c)
-	
-	#m.start_minimax(BOARD,c.black_pieces,c.red_pieces)
-	
-	
-	##---[ TESTANDO O GERADOR DE ESTADOS ]-------------------------------#
-	
-	##test_board = [['#','.','#','.','#','.','#','.'],
-				  ##['.','#','.','#','b','#','.','#'],
-				  ##['#','b','#','b','#','b','#','r'],
-				  ##['r','#','.','#','.','#','b','#'],
-				  ##['#','.','#','.','#','.','#','b'],
-				  ##['.','#','.','#','r','#','r','#'],
-				  ##['#','r','#','.','#','r','#','r'],
-				  ##['.','#','.','#','.','#','.','#']]
-	
-	##test_board = [['#','.','#','.','#','b','#','.'],
-				  ##['.','#','.','#','b','#','.','#'],
-				  ##['#','b','#','b','#','.','#','r'],
-				  ##['.','#','.','#','.','#','b','#'],
-				  ##['#','r','#','.','#','.','#','b'],
-				  ##['.','#','.','#','r','#','r','#'],
-				  ##['#','r','#','.','#','r','#','r'],
-				  ##['.','#','.','#','.','#','.','#']]
-				  
-	test_board =   [['#','B','#','.','#','.','#','.'],
-					['.','#','.','#','b','#','b','#'],
-					['#','.','#','b','#','.','#','r'],
-					['b','#','.','#','.','#','b','#'],
-					['#','r','#','.','#','.','#','b'],
-					['.','#','.','#','r','#','r','#'],
-					['#','r','#','.','#','r','#','r'],
-					['.','#','.','#','.','#','.','#']]
+	#test_board =   [['#','.','#','.','#','.','#','.'],
+					#['.','#','.','#','.','#','.','#'],
+					#['#','.','#','.','#','.','#','.'],
+					#['.','#','.','#','.','#','.','#'],
+					#['#','.','#','.','#','.','#','.'],
+					#['b','#','b','#','.','#','.','#'],
+					#['#','r','#','r','#','.','#','.'],
+					#['.','#','.','#','.','#','.','#']]
 	
 	test_board =   [['#','.','#','.','#','.','#','.'],
+					['r','#','.','#','.','#','.','#'],
+					['#','.','#','b','#','b','#','.'],
 					['.','#','.','#','.','#','.','#'],
-					['#','.','#','.','#','b','#','.'],
-					['.','#','.','#','.','#','.','#'],
-					['#','R','#','.','#','.','#','.'],
-					['.','#','.','#','.','#','.','#'],
+					['#','.','#','b','#','.','#','.'],
+					['.','#','r','#','.','#','.','#'],
 					['#','.','#','.','#','.','#','.'],
 					['.','#','.','#','.','#','.','#']]
 	
@@ -453,13 +585,46 @@ if __name__ == "__main__":
 				p = BlackPiece((row,col))
 				p.promote()
 				blacks.append(p)
-				
+	
+	
+	dm = Decisao_Minimax(1,c)
 	meu_estado = Estado(reds,blacks,test_board)
 	
-	dm = Decisao_Minimax(3,c)
-	dm.sucessores(meu_estado,meu_estado.pretas)
+	
+	print "Estado Recebido"
+	print "Vermelhas"
+	for p in meu_estado.vermelhas:
+		print p.position
+	print "Pretas"
+	for p in meu_estado.pretas:
+		print p.position
+	print "Tabuleiro"
+	for l in meu_estado.tabuleiro:
+		print l
+	
+	es, mo = dm.sucessores(meu_estado,meu_estado.vermelhas)
+	
+	print "================"
+	print "#  Sucessores  #"
+	print "================"
+	for e, m in zip(es,mo):
+		print "Movimento"
+		print "I:",m.pos_inicial
+		print "F:",m.pos_final
+		print "C:",m.captura
+		print "Estado_Vermelhas"
+		for k in e.vermelhas:
+			print k.position
+		print "Estado_pretas"
+		for k in e.pretas:
+			print k.position
+		for l in e.tabuleiro:
+			print l
+	print "================"
 	
 	
+	print "ONDE PAREI:"
+	print "TESTAR O MÉTODO DE GERAÇÃO DE SUCESSORES PARA CASOS DE CAPTURA"
 	
 			
 			
