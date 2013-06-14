@@ -316,11 +316,6 @@ class Decisao_Minimax(object):
 	
 	#
 	def comecar(self,estado,jogador, oponente):
-		if jogador.__class__ == estado.vermelhas.__class__:
-			print "Jogador == Vermelhas"
-		elif jogador.__class__ == estado.pretas.__class__:
-			print "Jogador == Pretas"
-		
 		j,v = self.valor_max(estado,0,jogador, oponente)
 		return j,v
 	
@@ -329,27 +324,44 @@ class Decisao_Minimax(object):
 	def valor_max(self,estado, profundidade, jogador, oponente):
 		ax = "\t"*profundidade
 		print ax,"Estado MAX"
-		print ax,"Vermelhas"
-		for p in estado.vermelhas:
-			print ax,p.position
-		print ax,"Pretas"
-		for p in estado.pretas:
-			print ax,p.position
+		#print ax,"Vermelhas"
+		#for p in estado.vermelhas:
+			#print ax,p.position
+		#print ax,"Pretas"
+		#for p in estado.pretas:
+			#print ax,p.position
 		print ax,"Tabuleiro"
 		for l in estado.tabuleiro:
 			print ax,l
 		
+		#if jogador[0].__class__ == estado.vermelhas[0].__class__:
+			#print ax,"Jogador: Vermelhas"
+			#for l in estado.vermelhas:
+				#print ax,l.position
+			#print ax,"Oponete: Pretas"
+			#for l in estado.pretas:
+				#print ax,l.position
+		#if jogador[0].__class__ == estado.pretas[0].__class__:
+			#print ax,"Jogador: Pretas"
+			#for l in estado.pretas:
+				#print ax,l.position
+			#print ax,"Oponente: Vermelhas"
+			#for l in estado.vermelhas:
+				#print ax,l.position
+		
 		if self.profundo_o_suficiente(estado,profundidade):
-			return None,self.utilidade(estado.tabuleiro, jogador, oponente)
+			x =  self.utilidade(estado.tabuleiro, jogador, oponente)
+			print x
+			return None,x#self.utilidade(estado.tabuleiro, jogador, oponente)
 		
 		melhor_valor  = -INFINITY
 		melhor_jogada = None
 		
-		if jogador.__class__ == estado.vermelhas.__class__:
-			print "Jogador == Vermelhas"
+		if jogador[0].__class__ == estado.vermelhas[0].__class__:
+			print ax,"Jogador == Vermelhas"
 			suc_estados,suc_movimentos =  self.sucessores(estado, estado.vermelhas)
-		elif jogador.__class__ == estado.pretas.__class__:
-			print "Jogador == Pretas"
+		elif jogador[0].__class__ == estado.pretas[0].__class__:
+			print ax,"Jogador == Pretas"
 			suc_estados,suc_movimentos =  self.sucessores(estado, estado.pretas)
 		
 		for s,a in zip(suc_estados,suc_movimentos):
@@ -358,7 +370,6 @@ class Decisao_Minimax(object):
 				melhor_valor  = valor
 				melhor_jogada = a
 		
-		print melhor_jogada,melhor_valor
 		return melhor_jogada,melhor_valor
 	
 	
@@ -366,31 +377,44 @@ class Decisao_Minimax(object):
 	def valor_min(self,estado, profundidade, jogador, oponente):
 		ax = "\t"*profundidade
 		print ax,"Estado MIN"
-		print ax,"Vermelhas"
-		for p in estado.vermelhas:
-			print ax,p.position
-		print ax,"Pretas"
-		for p in estado.pretas:
-			print ax,p.position
+		#print ax,"Vermelhas"
+		#for p in estado.vermelhas:
+			#print ax,p.position
+		#print ax,"Pretas"
+		#for p in estado.pretas:
+			#print ax,p.position
 		print ax,"Tabuleiro"
 		for l in estado.tabuleiro:
 			print ax,l
-		print "Oponente"
-		for l in oponente:
-			print ax,l.__class__,l.position
+		#if jogador[0].__class__ == estado.vermelhas[0].__class__:
+			#print ax,"Jogador: Vermelhas"
+			#for l in estado.vermelhas:
+				#print ax,l.position
+			#print ax,"Oponente: Pretas"
+			#for l in estado.pretas:
+				#print ax,l.position
+		#if jogador[0].__class__ == estado.pretas[0].__class__:
+			#print ax,"Jogador: Pretas"
+			#for l in estado.pretas:
+				#print ax,l.position
+			#print ax,"Oponente: Vermelhas"
+			#for l in estado.vermelhas:
+				#print ax,l.position
 		
 		if self.profundo_o_suficiente(estado,profundidade):
-			return None, self.utilidade(estado.tabuleiro, jogador, oponente)
+			x = self.utilidade(estado.tabuleiro, jogador, oponente)
+			print x
+			return None,x# self.utilidade(estado.tabuleiro, jogador, oponente)
 		
 		melhor_valor  = INFINITY
 		melhor_jogada = None
 		
 		# ERRO : oponente não representa a configuração atual do estado
-		if oponente.__class__ == estado.vermelhas.__class__:
-			print "Oponente == Vermelhas"
+		if oponente[0].__class__ == estado.vermelhas[0].__class__:
+			print ax,"Oponente == Vermelhas"
 			suc_estados,suc_movimentos =  self.sucessores(estado, estado.vermelhas)
-		elif oponente.__class__ == estado.pretas.__class__:
-			print "Oponente == Pretas"
+		elif oponente[0].__class__ == estado.pretas[0].__class__:
+			print ax,"Oponente == Pretas"
 			suc_estados,suc_movimentos =  self.sucessores(estado, estado.pretas)
 		
 		for s,a in zip(suc_estados,suc_movimentos):
@@ -399,7 +423,6 @@ class Decisao_Minimax(object):
 				melhor_valor = valor
 				melhor_jogada = a
 		
-		print melhor_jogada,melhor_valor
 		return melhor_jogada,melhor_valor
 	
 	#
@@ -594,7 +617,326 @@ class Decisao_Minimax(object):
 			return proximos_estados,proximos_movimentos
 	
 	
-
+#===========================================================
+class Decisao_Alfa_Beta(object):
+	global INFINITY
+	
+	def __init__(self,profundidade, jogo):
+		global INFINITY
+		INFINITY = 1000
+		
+		self.profundidade = profundidade
+		self.jogo = jogo
+	
+	
+	#
+	def comecar(self,estado,jogador, oponente):
+		j,v = self.valor_max(estado,-INFINITY,INFINITY,0,jogador, oponente)
+		return j,v
+	
+	
+	#
+	def valor_max(self,estado,alfa,beta, profundidade, jogador, oponente):
+		ax = "\t"*profundidade
+		print ax,"Estado MAX"
+		#print ax,"Vermelhas"
+		#for p in estado.vermelhas:
+			#print ax,p.position
+		#print ax,"Pretas"
+		#for p in estado.pretas:
+			#print ax,p.position
+		print ax,"Tabuleiro"
+		for l in estado.tabuleiro:
+			print ax,l
+		
+		#if jogador[0].__class__ == estado.vermelhas[0].__class__:
+			#print ax,"Jogador: Vermelhas"
+			#for l in estado.vermelhas:
+				#print ax,l.position
+			#print ax,"Oponete: Pretas"
+			#for l in estado.pretas:
+				#print ax,l.position
+		#if jogador[0].__class__ == estado.pretas[0].__class__:
+			#print ax,"Jogador: Pretas"
+			#for l in estado.pretas:
+				#print ax,l.position
+			#print ax,"Oponente: Vermelhas"
+			#for l in estado.vermelhas:
+				#print ax,l.position
+		
+		if self.profundo_o_suficiente(estado,profundidade):
+			x =  self.utilidade(estado.tabuleiro, jogador, oponente)
+			print x
+			return None,x#self.utilidade(estado.tabuleiro, jogador, oponente)
+		
+		melhor_valor  = -INFINITY
+		melhor_jogada = None
+		
+		if jogador[0].__class__ == estado.vermelhas[0].__class__:
+			print ax,"Jogador == Vermelhas"
+			suc_estados,suc_movimentos =  self.sucessores(estado, estado.vermelhas)
+		elif jogador[0].__class__ == estado.pretas[0].__class__:
+			print ax,"Jogador == Pretas"
+			suc_estados,suc_movimentos =  self.sucessores(estado, estado.pretas)
+		
+		for s,a in zip(suc_estados,suc_movimentos):
+			jogada,valor = self.valor_min(s,alfa,beta,profundidade+1,jogador, oponente)
+			if melhor_valor < valor:
+				melhor_valor  = valor
+				melhor_jogada = a
+			if melhor_valor >= beta:
+				return melhor_jogada,melhor_valor
+			alfa = melhor_valor
+		
+		return melhor_jogada,melhor_valor
+	
+	
+	#
+	def valor_min(self,estado,alfa,beta, profundidade, jogador, oponente):
+		ax = "\t"*profundidade
+		print ax,"Estado MIN"
+		#print ax,"Vermelhas"
+		#for p in estado.vermelhas:
+			#print ax,p.position
+		#print ax,"Pretas"
+		#for p in estado.pretas:
+			#print ax,p.position
+		print ax,"Tabuleiro"
+		for l in estado.tabuleiro:
+			print ax,l
+		#if jogador[0].__class__ == estado.vermelhas[0].__class__:
+			#print ax,"Jogador: Vermelhas"
+			#for l in estado.vermelhas:
+				#print ax,l.position
+			#print ax,"Oponente: Pretas"
+			#for l in estado.pretas:
+				#print ax,l.position
+		#if jogador[0].__class__ == estado.pretas[0].__class__:
+			#print ax,"Jogador: Pretas"
+			#for l in estado.pretas:
+				#print ax,l.position
+			#print ax,"Oponente: Vermelhas"
+			#for l in estado.vermelhas:
+				#print ax,l.position
+		
+		if self.profundo_o_suficiente(estado,profundidade):
+			x = self.utilidade(estado.tabuleiro, jogador, oponente)
+			print x
+			return None,x# self.utilidade(estado.tabuleiro, jogador, oponente)
+		
+		melhor_valor  = INFINITY
+		melhor_jogada = None
+		
+		# ERRO : oponente não representa a configuração atual do estado
+		if oponente[0].__class__ == estado.vermelhas[0].__class__:
+			print ax,"Oponente == Vermelhas"
+			suc_estados,suc_movimentos =  self.sucessores(estado, estado.vermelhas)
+		elif oponente[0].__class__ == estado.pretas[0].__class__:
+			print ax,"Oponente == Pretas"
+			suc_estados,suc_movimentos =  self.sucessores(estado, estado.pretas)
+		
+		for s,a in zip(suc_estados,suc_movimentos):
+			jogada,valor = self.valor_max(s,alfa,beta,profundidade+1,jogador, oponente)
+			if melhor_valor > valor:
+				melhor_valor = valor
+				melhor_jogada = a
+			if melhor_valor <= alfa:
+				return melhor_jogada,melhor_valor
+			beta = melhor_valor
+		
+		return melhor_jogada,melhor_valor
+	
+	#
+	def utilidade(self,tabuleiro,jogador,oponente):
+		global INFINITY
+		
+		if len(jogador) == 0 or len(self.jogo.generate_moves(jogador,tabuleiro)) == 0:
+			return -INFINITY
+		elif len(oponente) == 0 or len(self.jogo.generate_moves(oponente,tabuleiro)) == 0:
+			return INFINITY
+		
+		red = 0
+		black = 0
+		for i, row in enumerate(tabuleiro):
+			for j, col in enumerate(tabuleiro):
+				casa = tabuleiro[i][j]
+				if i in [3,4] and j in [3,4]:
+					if casa == 'r':
+						red += 2
+					elif casa == 'R':
+						red += 5
+					if casa == 'b':
+						black += 2
+					elif  casa == 'B':
+						black += 5
+				elif i in range(2,6) and j in range(2,6):
+					if casa == 'r':
+						red += 4
+					elif  casa == 'R':
+						red += 10
+					if casa == 'b':
+						black += 4
+					elif  casa == 'B':
+						black += 10
+				elif i in range(1,7) and j in range(1,7):
+					if casa == 'r':
+						red += 6
+					elif  casa == 'R':
+						red += 15
+					if casa == 'b':
+						black += 6
+					elif  casa == 'B':
+						black += 15
+				elif i in range(0,8) and j in range(0,8):
+					if casa == 'r':
+						red += 8
+					elif  casa == 'R':
+						red += 20
+					if casa == 'b':
+						black += 8
+					elif  casa == 'B':
+						black += 20
+		
+		if jogador[0].group == 'r' or jogador[0].group == 'R':
+			return red-black
+		else:
+			return black-red
+	
+	
+	# OK
+	def profundo_o_suficiente(self,estado,profundidade):
+		return profundidade >= self.profundidade or self.jogo.fim_de_jogo(estado)
+	
+	
+	# OK
+	
+	def proximo_estado(self, estado, movimento):
+		"""
+		Recebe um estado e um movimento, retornando um novo estado.
+		O estado resultante é construído com a aplicação do movimento
+		no estado recebido.
+		"""
+		novo_estado = copy.deepcopy(estado)
+		novo_peca   = None
+		jogador     = None
+		oponente    = None
+		
+		pos_ini = movimento.pos_inicial
+		casa = novo_estado.tabuleiro[pos_ini[0]][pos_ini[1]]
+		if casa == 'r' or casa == 'R':
+			jogador  = novo_estado.vermelhas
+			oponente = novo_estado.pretas
+		elif casa == 'b' or casa == 'B':
+			jogador  = novo_estado.pretas
+			oponente = novo_estado.vermelhas
+		else:
+			print "ERRO: proximo_estado - movimento inválido, casa vazia"
+		
+		for peca in jogador:
+			if peca.position == movimento.pos_inicial:
+				novo_peca = peca
+				break
+		
+		#print ax,"NÃO É AQUI O ERRO"
+		
+		# atualizar o estado
+		self.proximo_estado_auxiliar(novo_peca,novo_estado,movimento)
+		
+		for peca in copy.copy(oponente):
+			pos = peca.position
+			if pos in movimento.captura:
+				novo_estado.tabuleiro[pos[0]][pos[1]] = '.'
+				oponente.remove(peca)
+		
+		# promover a peça, após a jogada ela parou
+		# em uma casa de coroação
+		if novo_peca.position[0] == novo_peca.MAX_ROW:
+			novo_peca.promote()
+			pos_prom = novo_peca.position
+			novo_estado.tabuleiro[pos_prom[0]][pos_prom[1]] = novo_peca.group
+		
+		return movimento,novo_estado
+	
+	
+	def proximo_estado_auxiliar(self,peca,estado, movimento):
+		"""
+		Faz a análise e geração do próximo estado, verificando
+		se existe captura ou não e tratando a captura em
+		sequencia
+		"""
+		pos_ini = movimento.pos_inicial
+		pos_fin = movimento.pos_final
+		
+		estado.tabuleiro[pos_ini[0]][pos_ini[1]] = '.'
+		estado.tabuleiro[pos_fin[0]][pos_fin[1]] = peca.group
+		peca.position = pos_fin
+		pos_anterior = movimento.pos_inicial
+		
+		if len(movimento.captura) > 0:
+			pos_cap = movimento.captura[-1]
+			estado.tabuleiro[pos_cap[0]][pos_cap[1]] = 'x'
+			
+			cap_seq = peca.get_moves(estado.tabuleiro)
+			if len(cap_seq[1]) > 0:
+				movimento.pos_inicial = movimento.pos_final
+				movimento.pos_final = cap_seq[0][0]
+				movimento.captura.append(cap_seq[1][0])
+				
+				self.proximo_estado_auxiliar(peca,estado,movimento)
+				movimento.pos_inicial = pos_anterior
+	
+	
+	#
+	def sucessores(self, estado, jogador):
+		"""
+		Obs.: Tratar o caso da captura em sequencia após a primeira captura
+		para casos em que há mais de uma possibilidade de caminhos
+		"""
+		if self.profundo_o_suficiente(estado,0):		# A profundidade não importa neste caso
+			return [],[]								# apenas interessa saber os estados sucessores
+														# caso exista algum
+		else:
+			proximos_estados = []						# lista com os próximos estados
+			proximos_movimentos = []					# lista com os próximos movimentos
+			movimentos = self.jogo.generate_moves(jogador,estado.tabuleiro)
+			
+			#for j in jogador:
+				#print ">>>",j.position
+			
+			for peca in movimentos:						# para cada peça com movimento
+				#print peca[0].__class__,peca[0].position,peca[1],peca[2]
+				for i, jogada in enumerate(peca[1]):	# para cada jogada da peça
+					if len(peca[2]) == len(peca[1]):
+						movimento = Movimento(peca[0].position,jogada,[peca[2][i]])
+					else:
+						movimento = Movimento(peca[0].position,jogada,[])
+					
+					#print "AQUI"
+					#ax = "\t"*2
+					#print ax,"Estado Com Erro",id(estado)
+					#print ax,"Vermelhas"
+					#for p in estado.vermelhas:
+						#print ax,p.position
+					#print ax,"Pretas"
+					#for p in estado.pretas:
+						#print ax,p.position
+					#print ax,"Tabuleiro"
+					#for l in estado.tabuleiro:
+						#print ax,l
+					#print ax,"Movimento Com Erro"
+					#print ax,movimento.pos_inicial
+					#print ax,movimento.pos_final
+					#print ax,movimento.captura
+					
+					movimento,novo_estado = self.proximo_estado(estado,movimento)
+					
+					#print "NÃO É AQUI"
+					
+					proximos_estados.append(novo_estado)
+					proximos_movimentos.append(movimento)
+			
+			return proximos_estados,proximos_movimentos
+#===========================================================
 
 class Estado(object):
 	
@@ -639,8 +981,8 @@ if __name__ == "__main__":
 					#['r','#','.','#','.','#','.','#'],
 					#['#','.','#','.','#','.','#','.'],
 					#['r','#','.','#','.','#','.','#'],
-					#['#','.','#','b','#','.','#','.'],
-					#['.','#','.','#','.','#','b','#'],
+					#['#','.','#','b','#','b','#','.'],
+					#['.','#','r','#','.','#','.','#'],
 					#['#','.','#','.','#','.','#','.'],
 					#['.','#','.','#','.','#','.','#']]
 	
@@ -667,20 +1009,21 @@ if __name__ == "__main__":
 				blacks.append(p)
 	
 	
-	dm = Decisao_Minimax(3,c)
+	#dm = Decisao_Minimax(3,c)
+	dm = Decisao_Alfa_Beta(7,c)
 	meu_estado = Estado(reds,blacks,test_board)
 	
 	
-	print "Estado Recebido"
-	print "Vermelhas"
-	for p in meu_estado.vermelhas:
-		print p.position
-	print "Pretas"
-	for p in meu_estado.pretas:
-		print p.position
-	print "Tabuleiro"
-	for l in meu_estado.tabuleiro:
-		print l
+	#print "Estado Recebido"
+	#print "Vermelhas"
+	#for p in meu_estado.vermelhas:
+		#print p.position
+	#print "Pretas"
+	#for p in meu_estado.pretas:
+		#print p.position
+	#print "Tabuleiro"
+	#for l in meu_estado.tabuleiro:
+		#print l
 	print
 	
 	#movimento_final, valor_final = dm.comecar(meu_estado,meu_estado.pretas,meu_estado.vermelhas)
@@ -688,9 +1031,9 @@ if __name__ == "__main__":
 	
 	print "Valor Final:",valor_final
 	print "Movimento Final:",movimento_final
-	#print "I:",movimento_final.pos_inicial
-	#print "F:",movimento_final.pos_final
-	#print "C:",movimento_final.captura
+	print "I:",movimento_final.pos_inicial
+	print "F:",movimento_final.pos_final
+	print "C:",movimento_final.captura
 	
 	#suc_e,suc_m = dm.sucessores(meu_estado,meu_estado.pretas)
 	#for e,m in zip(suc_e, suc_m):
