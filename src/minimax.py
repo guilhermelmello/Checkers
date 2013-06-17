@@ -411,6 +411,7 @@ if __name__ == "__main__":
 	from checkers import *
 	import pygame
 	
+	
 	pygame.init()
 	
 	screen = pygame.display.set_mode((0,0))

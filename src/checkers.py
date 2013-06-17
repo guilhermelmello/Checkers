@@ -30,6 +30,7 @@ class Checkers(object):
 		global BLACK_CHECKER, BLACK_CHECKER_SELECTED
 		global CAPTURE_MODE, CAPTURE_LIST, CAPTURE_COUNT
 		
+		
 		RED_DEFAULT				= pygame.image.load("images/red_default.png"           ).convert_alpha()
 		RED_DEFAULT_SELECTED	= pygame.image.load("images/red_default_selected.png"  ).convert_alpha()
 		RED_CHECKER				= pygame.image.load("images/red_checker.png"           ).convert_alpha()

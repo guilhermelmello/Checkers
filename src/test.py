@@ -266,6 +266,9 @@ if __name__ == "__main__":
 	pygame.display.flip()
 	
 	
+	from mpi4py import MPI
+	comm = MPI.COMM_WORLD
+	
 	#for i,board in enumerate(base):
 		#print "\nTabuleiro",i
 		#for l in board:
@@ -288,20 +291,35 @@ if __name__ == "__main__":
 	while time.time() - tempo_inicio > 15:
 		pass
 	
-	nivel = [3]#,5]#,7,10]
+	nivel = [3,5,7]#,10]
 	heuristica = ["posicional","avanco","avanco2"]
 	
 	
 	keys = ['heuristica','profundidade','estados','tempo']
-	resultado_minimax   = [[[{}.fromkeys(keys,['NADA']) for j in range(len(heuristica))]for k in range(len(nivel))] for i in range(len(base))]
-	resultado_alfa_beta = [[[{}.fromkeys(keys,['NADA']) for j in range(len(heuristica))]for k in range(len(nivel))] for i in range(len(base))]
+	resultado_minimax   = [[[{}.fromkeys(keys,[None]) for j in range(len(heuristica))]for k in range(len(nivel))] for i in range(len(base))]
+	resultado_alfa_beta = [[[{}.fromkeys(keys,[None]) for j in range(len(heuristica))]for k in range(len(nivel))] for i in range(len(base))]
 	
-	for it,tabuleiro in enumerate(base[2:4]):
+	if comm.rank == 0:
+		print 'comm size', comm.size
+	tab = (comm.rank // 3) + 16
+	idnivel = comm.rank % 3
+	print 'thread={} tabuleiro={} nivel={}'.format(comm.rank, tab, idnivel)
+	comm.Barrier()
+	
+	it = tab
+	#exit(0)
+	
+	if True:
+		#for it,tabuleiro in enumerate(base):
+		tabuleiro = base[it]
 		print "\n\n==[ Tabuleiro: %d ]=========="%(it)
 		
 		meu_estado = gerar_estado(tabuleiro)
 		
-		for ip,n in enumerate(nivel):
+		#for ip,n in enumerate(nivel):
+		ip = idnivel
+		n = nivel[ip]
+		if True:
 			print "_____[ Nível: %d ]______________"%(n)
 			for ih, h in enumerate(heuristica):
 				print "........[ Heurística: %s ]......."%(h)
@@ -328,12 +346,16 @@ if __name__ == "__main__":
 			
 		
 		print "==============================="
+		it += 1
 	
+	fmm = open("rank{}_resultado_minimax".format(comm.rank), 'w')
+	fab = open("rank{}_resultado_alfa_beta".format(comm.rank), 'w')
 	
-	fmm = open("resultado_minimax",'w')
-	fab = open("resultado_alfa_beta",'w')
-	
-	for it, t in enumerate(resultado_minimax):
+	#for it, t in enumerate(resultado_minimax):
+	#	for ip, p in enumerate(t):
+	it = tab
+	t = resultado_minimax[it]
+	if True:
 		for ip, p in enumerate(t):
 			for he in p:
 				fmm.write("\n------------------")
@@ -343,7 +365,7 @@ if __name__ == "__main__":
 				fmm.write("\nEstados    "+str(he['estados']))
 				fmm.write("\nTempo      "+str(he['tempo']))
 	
-	for it, t in enumerate(resultado_alfa_beta):
+		t = resultado_alfa_beta[it]
 		for ip, p in enumerate(t):
 			for he in p:
 				fab.write("\n------------------")
@@ -352,7 +374,7 @@ if __name__ == "__main__":
 				fab.write("\nHeurística "+str(he['heuristica']))
 				fab.write("\nEstados    "+str(he['estados']))
 				fab.write("\nTempo      "+str(he['tempo']))
-	
+		
 	
 	#--[ Alfa-Beta ]-----------------------------------------------------#
 	
