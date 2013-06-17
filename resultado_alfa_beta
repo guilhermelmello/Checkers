@@ -1,0 +1,379 @@
+
+------------------
+Tabuleiro  0
+Nível      3
+Heurística posicional
+Estados    126
+Tempo      0.848082065582
+------------------
+Tabuleiro  0
+Nível      3
+Heurística avanco
+Estados    124
+Tempo      0.839737892151
+------------------
+Tabuleiro  0
+Nível      3
+Heurística avanco2
+Estados    124
+Tempo      0.837734937668
+------------------
+Tabuleiro  1
+Nível      3
+Heurística posicional
+Estados    151
+Tempo      1.06347298622
+------------------
+Tabuleiro  1
+Nível      3
+Heurística avanco
+Estados    87
+Tempo      0.65727686882
+------------------
+Tabuleiro  1
+Nível      3
+Heurística avanco2
+Estados    87
+Tempo      0.667912006378
+------------------
+Tabuleiro  2
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  2
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  2
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  3
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  3
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  3
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  4
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  4
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  4
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  5
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  5
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  5
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  6
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  6
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  6
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  7
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  7
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  7
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  8
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  8
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  8
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  9
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  9
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  9
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  10
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  10
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  10
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  11
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  11
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  11
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  12
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  12
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  12
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  13
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  13
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  13
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  14
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  14
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  14
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  15
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  15
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  15
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  16
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  16
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  16
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  17
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  17
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  17
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  18
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  18
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  18
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  19
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  19
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  19
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  20
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  20
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']
+------------------
+Tabuleiro  20
+Nível      ['NADA']
+Heurística ['NADA']
+Estados    ['NADA']
+Tempo      ['NADA']

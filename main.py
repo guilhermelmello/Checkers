@@ -43,17 +43,17 @@ def main():
 					state = 0
 				elif state == 11:
 					print "1 player mode: Easy"
-					checkers.start_checkers(minimax=3)
+					checkers.start_checkers(minimax_depth=3)
 					menu.set_menu(0)
 					state = 0
 				elif state == 12:
 					print "1 player mode: Medium"
-					checkers.start_checkers(minimax=5)
+					checkers.start_checkers(minimax_depth=5)
 					menu.set_menu(0)
 					state = 0
 				elif state == 13:
 					print "1 player mode: Hard"
-					checkers.start_checkers(minimax=7)
+					checkers.start_checkers(minimax_depth=7)
 					menu.set_menu(0)
 					state = 0
 				elif state == 14:

@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 
 import sys, pygame, copy, os
-from minimax import Minimax
+from minimax import *
 from abc import *
 from math import *
 from myMenu import MenuItem, Text, Button
@@ -53,33 +53,6 @@ class Checkers(object):
 					 ['r','#','r','#','r','#','r','#'],		# (B) - black checker piece
 					 ['#','r','#','r','#','r','#','r'],
 					 ['r','#','r','#','r','#','r','#']]
-		
-		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],
-					 #['b','#','r','#','.','#','b','#'],
-					 #['#','.','#','.','#','.','#','.'],
-					 #['.','#','.','#','.','#','.','#'],
-					 #['#','.','#','.','#','.','#','.'],
-					 #['.','#','.','#','.','#','.','#'],
-					 #['#','.','#','.','#','.','#','.'],
-					 #['.','#','.','#','.','#','.','#']]
-		
-		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 #['B','#','.','#','b','#','.','#'],	# (b) - black piece
-					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 #['R','#','.','#','b','#','b','#'],	# (.) - free slot
-					 #['#','.','#','.','#','r','#','r'],	# (R) - red checker piece
-					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
-					 #['#','.','#','.','#','.','#','.'],
-					 #['.','#','.','#','.','#','.','#']]
-		
-		#BOARD_MAP = [['#','.','#','.','#','.','#','.'],	# (r) - red piece
-					 #['.','#','.','#','.','#','R','#'],	# (b) - black piece
-					 #['#','.','#','.','#','.','#','.'],	# (#) - unplayable slot
-					 #['.','#','.','#','b','#','.','#'],	# (.) - free slot
-					 #['#','.','#','.','#','.','#','r'],	# (R) - red checker piece
-					 #['.','#','b','#','.','#','.','#'],	# (B) - black checker piece
-					 #['#','.','#','.','#','.','#','.'],
-					 #['.','#','.','#','.','#','.','#']]
 		
 		self.screen = screen
 		
@@ -164,14 +137,14 @@ class Checkers(object):
 	
 	
 	#
-	def start_checkers(self, minimax=None):
+	def start_checkers(self, minimax_depth=None):
 		global DONE, GAME_TEXT
 		
 		self.__init__(self.screen)
 		self.screen = pygame.display.set_mode(self.board_image.get_size(),RESIZABLE,32)
 		
-		if minimax:
-			mm = Minimax(minimax,self)
+		if minimax_depth:
+			mm = Decisao_Alfa_Beta(minimax_depth,self)
 		
 		done = False
 		DONE = False
@@ -187,17 +160,17 @@ class Checkers(object):
 				self.update(self.screen)
 				pygame.display.flip()
 			
-			if minimax:
-				if not self.RED_TURN:
-					print "START MINIMAX"
-					p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces) # peça, movimento, valor, capturas
-					print "preto jogou",p.position, "para",m,'por',v
-					
-					if not self.play(p,m):
-						self.RED_TURN = True
-						#raw_input("vez das pecas vermelhas")
-					#else: raw_input("preta ainda joga")
-			
+			if minimax_depth and not self.RED_TURN:
+				print "START MINIMAX"
+				estado_minimax = Estado(self.red_pieces,self.black_pieces,BOARD_MAP)
+				
+				j,v = mm.comecar(estado_minimax,estado_minimax.pretas,estado_minimax.vermelhas)
+				print "preto jogou",j.pos_inicial, "para",j.pos_final,'por',v
+				
+				print j,v
+				
+				self.play(j)
+				self.RED_TURN = True
 			
 			self.events()
 			self.update(self.screen)
@@ -206,13 +179,14 @@ class Checkers(object):
 			pygame.display.flip()
 	
 	
-	def start_computer_checkers(self, minimax=3,red_heur="default",black_heur="default"):
+	def start_computer_checkers(self, minimax_depth=None, red_heur="posicional",black_heur="posicional"):
 		global DONE, GAME_TEXT
 		
 		self.__init__(self.screen)
 		self.screen = pygame.display.set_mode(self.board_image.get_size(),RESIZABLE,32)
 		
-		mm = Minimax(minimax,self)
+		mm = Decisao_Alfa_Beta(minimax_depth,self,red_heur)
+		#mm = Decisao_Minimax(minimax_depth,self,red_heur)
 		
 		done = False
 		DONE = False
@@ -222,24 +196,38 @@ class Checkers(object):
 			self.screen.blit(self.board_image,(0,0))
 			self.update(self.screen)
 			pygame.display.flip()
+			
+			estado_minimax = Estado(self.red_pieces,self.black_pieces,BOARD_MAP)
+			
 			if self.RED_TURN:
-				p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.red_pieces,self.black_pieces,reverse=True,heur=red_heur) # peça, movimento, valor, capturas
+				mm.heuristica = red_heur
+				#print "heuristica vermelhas:",mm.heuristica
+				jo,v = mm.comecar(estado_minimax,estado_minimax.vermelhas,estado_minimax.pretas)
 				GAME_TEXT.update_text("Pretas Jogam")
 			else:
-				raw_input("AQUI?")
-				p,m,v = mm.start_minimax(copy.deepcopy(BOARD_MAP),self.black_pieces,self.red_pieces,heur=black_heur) # peça, movimento, valor, capturas
+				mm.heuristica = black_heur
+				#print "heuristica pretas   :",mm.heuristica
+				jo,v = mm.comecar(estado_minimax,estado_minimax.pretas,estado_minimax.vermelhas)
 				GAME_TEXT.update_text("Vermelhas Jogam")
 			
-			if not self.play(p,m):
-				self.RED_TURN = not self.RED_TURN
+			#print "\nTAbuleiro"
+			#for l in BOARD_MAP:
+				#print l
 			
+			#print "Valor:",v
+			#print "Jogada:"
+			#print jo.pos_inicial
+			#print jo.pos_meio
+			#print jo.pos_final
+			#print jo.captura
 			
-			
+			self.play(jo)
+			self.RED_TURN = not self.RED_TURN
 			
 			self.events()
 			self.update(self.screen)
 			done = self.end_of_game(BOARD_MAP)
-		
+			
 			pygame.display.flip()
 	
 	
@@ -523,69 +511,116 @@ class Checkers(object):
 			return True
 		elif len(estado.pretas) == 0 or len(self.generate_moves(estado.pretas,estado.tabuleiro)) == 0:
 			return True
-		# FALTA TRATAR OS CASOS DE EMPATE
+		
+		# CASOS DE EMPATE
+		if CAPTURE_COUNT >= 40:		# 20 jogadas de cada jogador
+			print "FIM DE JOGO, EMPATE"
+			return True
+		
+		R,r = 0,0
+		B,b = 0,0
+		
+		if CAPTURE_COUNT >= 10:		# 5 jogadas de cada jogador
+			for ps in [self.red_pieces,self.black_pieces]:
+				for p in ps:
+					if p.group == 'r':
+						r += 1
+					elif p.group == 'R':
+						R += 1
+					elif p.group == 'b':
+						b += 1
+					elif p.group == 'B':
+						B += 1
+		
+			for p,o in [[R,r],[B,b]],[[B,b],[R,r]]:
+				if p[0] <= 2 and p[1] == 0:	# 2 ou 1 dama
+					if o[0] <= 2 and o[1] == 0:
+						print "FIM DE JOGO, Empate"
+						return True
+					if o[0] == 1 and o[1] <= 1:	# x 1 dama e 1 ou 0 peça
+						print "FIM DE JOGO, Empate"
+						return True
+		
+		
 		return False
 		
 	
 	
 	#
-	def play(self, piece, move):
-		global BOARD_MAP
-		print "Movendo para",move
-		capt_again = False
-		moves = piece.get_moves(BOARD_MAP)
-		print moves
-		cap = None
-		if len(moves[1])>0:
-			for i in range(len(moves[0])):
-				if moves[0][i] == move:
-					cap = moves[1][i]
-			print "Com remoção da peça",cap
-			self.remove_piece(cap)
-			print piece.position,piece.get_moves(BOARD_MAP)
-			capt_again = True
+	def play(self, movimento):
+		global BOARD_MAP, CAPTURE_COUNT
 		
-		r,c = piece.position
-		BOARD_MAP[r][c] = '.'
-		piece.position = move
-		r,c = piece.position
-		BOARD_MAP[r][c] = piece.group
+		jogador = None
+		oponente = None
+		peca = None
 		
+		#print movimento.pos_inicial
+		#print movimento.pos_meio
+		#print movimento.pos_final
+		#print movimento.captura
+		#for l in BOARD_MAP:
+			#print l
 		
-		if capt_again and len(piece.get_moves(BOARD_MAP)[1]) > 0:
-			return True
+		# encontrar a apeça responsável pelo movimento
+		p_ini = movimento.pos_inicial
+		casa = BOARD_MAP[p_ini[0]][p_ini[1]]
+		if casa == 'r' or casa == 'R':
+			jogador = self.red_pieces
+			oponente = self.black_pieces
+		elif casa == 'b' or casa == 'B':
+			jogador = self.black_pieces
+			oponente = self.red_pieces
 		else:
-			if piece.position[0] == piece.MAX_ROW:
-				piece.promote()
-			return False
-	
-	#
-	def set_test(self,board):
-		"""
-			Método utilizado para testar o minimax durante a implementação
-			não será utilizado após termino da implementação
-			-> Define tabuleiro atual e as peças de cada jogador
-		"""
-		self.BOARD_MAP = copy.deepcopy(board)
-		self.red_pieces = []
-		self.black_pieces = []
-		self.RED_TURN = False
-		for lin,l in enumerate(board):
-			for col,casa in enumerate(l):
-				if casa == 'r':
-					p = RedPiece((lin,col))
-					self.red_pieces.append(p)
-				if casa == 'b':
-					p = BlackPiece((lin,col))
-					self.black_pieces.append(p)
-				if casa == 'R':
-					p = RedPiece((lin,col))
-					p.promote()
-					self.red_pieces.append(p)
-				if casa == 'B':
-					p = BlackPiece((lin,col))
-					p.promote()
-					self.black_pieces.append(p)
+			print "ERRO - A casa a ser movida não representa uma peça"
+		
+		for p in jogador:
+			if p.position == p_ini:
+				peca = p
+				break
+		
+		# movimentar a peça
+		p_ant = p_ini
+		while len(movimento.pos_meio)>0:
+			p_mov = movimento.pos_meio[0]
+			#print "Captura em sequencia",p_mov
+			peca.position = p_mov
+			BOARD_MAP[p_mov[0]][p_mov[1]] = peca.group
+			#print ">",p_ant
+			BOARD_MAP[p_ant[0]][p_ant[1]] = '.'
+			movimento.pos_meio.remove(p_mov)
+			p_ant = p_mov
+			
+			self.update(self.screen)
+			pygame.display.flip()
+		
+		p_fin = movimento.pos_final
+		peca.position = p_fin
+		if peca.position[0] == peca.MAX_ROW:
+			peca.promote()
+		BOARD_MAP[p_fin[0]][p_fin[1]] = peca.group
+		#print "_",p_ant
+		BOARD_MAP[p_ant[0]][p_ant[1]] = '.'
+		
+		if len(movimento.captura) > 0:
+			CAPTURE_COUNT = 0
+			for p in copy.copy(oponente):
+				if p.position in movimento.captura:
+					#print "Removeu",p.position
+					BOARD_MAP[p.position[0]][p.position[1]] = '.'
+					oponente.remove(p)
+		else:
+			CAPTURE_COUNT += 1
+		
+		#print "Fim da Jogada"
+		#print "Tabuleiro"
+		#for l in BOARD_MAP:
+			#print l
+		#print "Vermelhas"
+		#for p in self.red_pieces:
+			#print p.position
+		#print "Pretas"
+		#for p in self.black_pieces:
+			#print p.position
 
 
 class Piece(object):
